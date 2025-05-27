@@ -296,10 +296,11 @@ class UserPointsViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
     
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def get_user_streak(request):
     """Get user's current streak information"""
     user = request.user
-    
     # Get all completed quests for this user, ordered by completion date
     completed_quests = UserQuest.objects.filter(
         user=user,
@@ -320,17 +321,16 @@ def get_user_streak(request):
     completion_dates = set()
     for quest in completed_quests:
         if quest.completed_at:
-         completion_dates.add(quest.completed_at.date())
+            completion_dates.add(quest.completed_at.date())
 
-    
     # Sort dates in descending order (most recent first)
     sorted_dates = sorted(completion_dates, reverse=True)
-    
+
     # Calculate current streak
     current_streak = 0
     today = date.today()
     completed_today = today in completion_dates
-    
+
     # Check if user completed a quest today or yesterday
     if sorted_dates[0] >= today - timedelta(days=1):
         current_streak = 1
@@ -342,10 +342,10 @@ def get_user_streak(request):
                 current_streak += 1
             else:
                 break
-    
+
     # Calculate longest streak (simplified version)
-    longest_streak = current_streak  # You might want to implement a more complex calculation
-    
+    longest_streak = current_streak # You might want to implement a more complex calculation
+
     # Determine next level
     days_until_next_level = 0
     next_level_name = "Streak Master"
@@ -359,7 +359,7 @@ def get_user_streak(request):
     elif current_streak < 100:
         days_until_next_level = 100 - current_streak
         next_level_name = "Century Champion"
-    
+
     return Response({
         'current_streak': current_streak,
         'longest_streak': longest_streak,

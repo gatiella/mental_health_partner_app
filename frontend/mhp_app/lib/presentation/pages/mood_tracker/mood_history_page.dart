@@ -23,17 +23,12 @@ class MoodHistoryPage extends StatelessWidget {
             if (state is MoodInitial) {
               return const Center(child: Text("Loading..."));
             }
-
             if (state is MoodError) {
               return Center(child: Text("Error: ${state.message}"));
             }
-
             if (state is MoodHistoryLoaded) {
               final analyticsData = state.analytics;
-              final hasChartData =
-                  analyticsData.containsKey('weekly_ratings') &&
-                      analyticsData['weekly_ratings'] is List &&
-                      analyticsData['weekly_ratings'].isNotEmpty;
+              final hasHistoryData = state.history.isNotEmpty;
 
               return Column(
                 children: [
@@ -48,17 +43,19 @@ class MoodHistoryPage extends StatelessWidget {
                       child: Container(
                         height: 250,
                         padding: const EdgeInsets.only(top: 8),
-                        child: hasChartData
-                            ? MoodChart(analyticsData: analyticsData)
+                        child: hasHistoryData
+                            ? MoodChart(
+                                analyticsData: analyticsData,
+                                moodHistory:
+                                    state.history, // Pass real mood history
+                              )
                             : const Center(
-                                child: Text("No chart data available"),
+                                child: Text("No mood data available"),
                               ),
                       ),
                     ),
                   ),
-
                   const Divider(height: 1),
-
                   // Mood History List
                   Expanded(
                     child: ListView.builder(
@@ -79,7 +76,6 @@ class MoodHistoryPage extends StatelessWidget {
                 ],
               );
             }
-
             return const Center(child: CircularProgressIndicator());
           },
         ),

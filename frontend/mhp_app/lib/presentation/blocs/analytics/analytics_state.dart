@@ -14,11 +14,15 @@ class AnalyticsLoading extends AnalyticsState {}
 
 class MoodAnalyticsLoaded extends AnalyticsState {
   final Map<String, dynamic> analytics;
+  final List<dynamic> history;
 
-  const MoodAnalyticsLoaded(this.analytics);
+  const MoodAnalyticsLoaded({
+    required this.analytics,
+    required this.history,
+  });
 
   @override
-  List<Object> get props => [analytics];
+  List<Object> get props => [analytics, history];
 }
 
 class UserActivityLoaded extends AnalyticsState {

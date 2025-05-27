@@ -34,7 +34,7 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_BROWSER_XSS_FILTER = True
 CSP_DEFAULT_SRC = ("'self'",)
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1','192.168.16.204', '0.0.0.0']# Application definition
+ALLOWED_HOSTS = ['localhost', '127.0.0.1','192.168.37.204', '0.0.0.0']# Application definition
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -204,5 +204,5 @@ SIMPLE_JWT = {
 # CORS Settings
 CORS_ALLOW_ALL_ORIGINS = DEBUG
 CORS_ALLOWED_ORIGINS = [
-    "http://192.168.16.204:8000",
+    "http://192.168.37.204:8000",
 ]

@@ -25,7 +25,6 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
     LoadMoodAnalytics event,
     Emitter<AnalyticsState> emit,
   ) async {
-    // Don't emit loading if we've already loaded the data
     if (state is! MoodAnalyticsLoaded) {
       emit(AnalyticsLoading());
     }
@@ -33,7 +32,10 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
     final result = await getMoodAnalytics();
     result.fold(
       (failure) => emit(AnalyticsError(failure.message)),
-      (analytics) => emit(MoodAnalyticsLoaded(analytics)),
+      (analytics) => emit(MoodAnalyticsLoaded(
+        analytics: analytics,
+        history: [], // <- fix: added default empty history
+      )),
     );
   }
 

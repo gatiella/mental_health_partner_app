@@ -63,17 +63,60 @@ class _HomePageContent extends StatelessWidget {
             );
           },
         ),
+        actions: [
+          // Clickable streak button in app bar
+          BlocBuilder<GamificationBloc, GamificationState>(
+            builder: (context, state) {
+              return Padding(
+                padding: const EdgeInsets.only(right: 16),
+                child: InkWell(
+                  onTap: () => _showStreakDialog(context, state),
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: _getStreakColor(state).withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: _getStreakColor(state).withOpacity(0.5),
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          _getStreakIcon(state),
+                          color: _getStreakColor(state),
+                          size: 18,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          _getStreakText(state),
+                          style: TextStyle(
+                            color: _getStreakColor(state),
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: BlocBuilder<MoodBloc, MoodState>(
         builder: (context, state) {
           if (state is MoodInitial || state is MoodLoading) {
             return const Center(child: CircularProgressIndicator());
           }
-
           if (state is MoodError) {
             return Center(child: Text("Error loading chart: ${state.message}"));
           }
-
           if (state is MoodHistoryLoaded) {
             final analytics = state.analytics;
             final ratings = analytics['weekly_ratings'] ?? [];
@@ -92,60 +135,6 @@ class _HomePageContent extends StatelessWidget {
                 children: [
                   _buildQuoteCard(theme, quotes),
                   const SizedBox(height: 20),
-                  // Streak indicator
-                  BlocBuilder<GamificationBloc, GamificationState>(
-                    builder: (context, state) {
-                      if (state is StreakLoaded) {
-                        return StreakIndicator(
-                          streak: state.streak,
-                          isCompact: false,
-                        );
-                      } else if (state is StreakLoading) {
-                        return Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.grey.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: const Center(
-                            child: CircularProgressIndicator(),
-                          ),
-                        );
-                      } else if (state is StreakError) {
-                        return Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.red.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(Icons.error, color: Colors.red[300]),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  'Unable to load streak data',
-                                  style: TextStyle(color: Colors.red[700]),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }
-                      // Fallback with default streak
-                      return const StreakIndicator(
-                        streak: UserStreak(
-                          currentStreak: 0,
-                          longestStreak: 0,
-                          completedToday: false,
-                          daysUntilNextLevel: 1,
-                          nextLevelName: 'Beginner',
-                        ),
-                        isCompact: false,
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 20),
                   _buildMoodInputPrompt(context, theme),
                   const SizedBox(height: 20),
                   Card(
@@ -157,7 +146,10 @@ class _HomePageContent extends StatelessWidget {
                       height: 250,
                       padding: const EdgeInsets.only(top: 8),
                       child: hasData
-                          ? MoodChart(analyticsData: analytics)
+                          ? MoodChart(
+                              analyticsData: analytics,
+                              moodHistory: state.history, // Add this line
+                            )
                           : const Center(
                               child: Text("No chart data available")),
                     ),
@@ -166,14 +158,12 @@ class _HomePageContent extends StatelessWidget {
                   _buildQuickStats(context, theme, avgMood),
                   const SizedBox(height: 24),
                   _buildRecentJournalEntries(context, theme),
-                  // const SizedBox(height: 20),
-                  // _buildCommunityQuickAccess(context, theme),
                 ],
               ),
             );
           }
 
-          return const SizedBox.shrink();
+          return const Center(child: CircularProgressIndicator());
         },
       ),
       bottomNavigationBar: _buildBottomNavBar(context, theme, isDark),
@@ -187,96 +177,171 @@ class _HomePageContent extends StatelessWidget {
     );
   }
 
-  // Widget _buildCommunityQuickAccess(BuildContext context, ThemeData theme) {
-  //   return Column(
-  //     crossAxisAlignment: CrossAxisAlignment.start,
-  //     children: [
-  //       Text(
-  //         'Community Hub',
-  //         style: theme.textTheme.titleMedium,
-  //       ),
-  //       const SizedBox(height: 12),
-  //       GridView.count(
-  //         shrinkWrap: true,
-  //         physics: const NeverScrollableScrollPhysics(),
-  //         crossAxisCount: 2,
-  //         childAspectRatio: 1.5,
-  //         mainAxisSpacing: 12,
-  //         crossAxisSpacing: 12,
-  //         children: [
-  //           _buildCommunityCard(
-  //             context,
-  //             icon: Icons.group_work_rounded,
-  //             title: 'Challenges',
-  //             route: AppRouter.challengesRoute,
-  //             color: theme.colorScheme.primaryContainer,
-  //           ),
-  //           _buildCommunityCard(
-  //             context,
-  //             icon: Icons.forum_rounded,
-  //             title: 'Discussions',
-  //             route: AppRouter.discussionGroupsRoute,
-  //             color: theme.colorScheme.secondaryContainer,
-  //           ),
-  //           _buildCommunityCard(
-  //             context,
-  //             icon: Icons.chat_bubble_rounded,
-  //             title: 'Forums',
-  //             route: AppRouter.forumsRoute,
-  //             color: theme.colorScheme.tertiaryContainer,
-  //           ),
-  //           _buildCommunityCard(
-  //             context,
-  //             icon: Icons.celebration_rounded,
-  //             title: 'Success Stories',
-  //             route: AppRouter.successStoriesRoute,
-  //             color: theme.colorScheme.errorContainer,
-  //           ),
-  //         ],
-  //       ),
-  //     ],
-  //   );
-  // }
+  void _showStreakDialog(BuildContext context, GamificationState state) {
+    UserStreak streak;
 
-  // Widget _buildCommunityCard(
-  //   BuildContext context, {
-  //   required IconData icon,
-  //   required String title,
-  //   required String route,
-  //   required Color color,
-  // }) {
-  //   return Card(
-  //     elevation: 2,
-  //     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-  //     child: InkWell(
-  //       borderRadius: BorderRadius.circular(12),
-  //       onTap: () => Navigator.pushNamed(context, route),
-  //       child: Container(
-  //         padding: const EdgeInsets.all(16),
-  //         decoration: BoxDecoration(
-  //           color: color,
-  //           borderRadius: BorderRadius.circular(12),
-  //         ),
-  //         child: Column(
-  //           mainAxisAlignment: MainAxisAlignment.center,
-  //           children: [
-  //             Icon(icon,
-  //                 size: 32,
-  //                 color: Theme.of(context).colorScheme.onPrimaryContainer),
-  //             const SizedBox(height: 8),
-  //             Text(
-  //               title,
-  //               style: Theme.of(context).textTheme.titleSmall?.copyWith(
-  //                     color: Theme.of(context).colorScheme.onPrimaryContainer,
-  //                     fontWeight: FontWeight.w600,
-  //                   ),
-  //             ),
-  //           ],
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  // }
+    if (state is StreakLoaded) {
+      streak = state.streak;
+    } else {
+      // Default streak for error states
+      streak = const UserStreak(
+        currentStreak: 0,
+        longestStreak: 0,
+        completedToday: false,
+        daysUntilNextLevel: 1,
+        nextLevelName: 'Beginner',
+      );
+    }
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Your Streak',
+                      style:
+                          Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(Icons.close),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+
+                // Streak Indicator
+                if (state is StreakLoaded)
+                  StreakIndicator(
+                    streak: streak,
+                    isCompact: false,
+                  )
+                else if (state is StreakLoading)
+                  Container(
+                    padding: const EdgeInsets.all(32),
+                    child: const CircularProgressIndicator(),
+                  )
+                else if (state is StreakError)
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      children: [
+                        Icon(Icons.error, color: Colors.red[400], size: 32),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Unable to load streak data',
+                          style: TextStyle(color: Colors.red[700]),
+                        ),
+                      ],
+                    ),
+                  )
+                else
+                  StreakIndicator(
+                    streak: streak,
+                    isCompact: false,
+                  ),
+
+                const SizedBox(height: 20),
+
+                // Action buttons
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          Navigator.of(context)
+                              .pushNamed(AppRouter.questsRoute);
+                        },
+                        icon: const Icon(Icons.flag),
+                        label: const Text('Start Quest'),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          // Navigate to achievements or streak history page
+                        },
+                        icon: const Icon(Icons.emoji_events),
+                        label: const Text('View All'),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  String _getStreakText(GamificationState state) {
+    if (state is StreakLoaded) {
+      return '${state.streak.currentStreak}';
+    } else if (state is StreakLoading) {
+      return '...';
+    } else {
+      return '0';
+    }
+  }
+
+  IconData _getStreakIcon(GamificationState state) {
+    if (state is StreakLoaded) {
+      final streak = state.streak.currentStreak;
+      if (streak == 0) return Icons.play_circle_outline;
+      if (streak < 7) return Icons.local_fire_department;
+      if (streak < 30) return Icons.whatshot;
+      if (streak < 100) return Icons.star;
+      return Icons.emoji_events;
+    } else if (state is StreakLoading) {
+      return Icons.hourglass_empty;
+    } else {
+      return Icons.error_outline;
+    }
+  }
+
+  Color _getStreakColor(GamificationState state) {
+    if (state is StreakLoaded) {
+      final streak = state.streak.currentStreak;
+      if (streak == 0) return Colors.grey;
+      if (streak < 7) return Colors.orange;
+      if (streak < 30) return Colors.red;
+      if (streak < 100) return Colors.purple;
+      return Colors.amber;
+    } else if (state is StreakLoading) {
+      return Colors.blue;
+    } else {
+      return Colors.red;
+    }
+  }
 
   Widget _buildMoodInputPrompt(BuildContext context, ThemeData theme) {
     return Container(

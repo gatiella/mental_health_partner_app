@@ -91,11 +91,40 @@ class AnalyticsDashboard extends StatelessWidget {
                               const SizedBox(height: 12),
                               SizedBox(
                                 height: 220,
-                                child:
-                                    MoodChart(analyticsData: state.analytics),
+                                child: MoodChart(
+                                  analyticsData: state.analytics,
+                                  moodHistory: state.history,
+                                ),
                               ),
                             ],
                           );
+                        }
+                        if (state is AnalyticsError) {
+                          return _buildErrorWidget(state.message);
+                        }
+                        return const Center(
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(vertical: 40.0),
+                            child: CircularProgressIndicator(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  _buildCard(
+                    context,
+                    title: "Activity Overview",
+                    icon: Icons.bar_chart_rounded,
+                    iconColor: AppColors.secondaryColor,
+                    content: BlocBuilder<AnalyticsBloc, AnalyticsState>(
+                      buildWhen: (previous, current) =>
+                          current is UserActivityLoaded ||
+                          (current is AnalyticsLoading &&
+                              previous is! UserActivityLoaded),
+                      builder: (context, state) {
+                        if (state is UserActivityLoaded) {
+                          return ActivitySummary(activity: state.activity);
                         }
                         if (state is AnalyticsError) {
                           return _buildErrorWidget(state.message);

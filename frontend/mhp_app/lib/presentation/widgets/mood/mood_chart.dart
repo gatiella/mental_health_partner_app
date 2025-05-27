@@ -4,16 +4,18 @@ import 'package:mental_health_partner/presentation/themes/app_colors.dart';
 
 class MoodChart extends StatelessWidget {
   final Map<String, dynamic> analyticsData;
+  final List<dynamic>? moodHistory; // Make this optional
 
   const MoodChart({
     super.key,
     required this.analyticsData,
+    this.moodHistory, // Make this optional
   });
 
   @override
   Widget build(BuildContext context) {
-    // Extract mood data from analytics
-    final List<Map<String, dynamic>> moodData = _extractMoodData();
+    // Extract mood data from actual user history
+    final List<Map<String, dynamic>> moodData = _extractMoodDataFromHistory();
 
     // Make the widget scrollable to prevent overflow
     return SingleChildScrollView(
@@ -36,31 +38,129 @@ class MoodChart extends StatelessWidget {
     );
   }
 
-  List<Map<String, dynamic>> _extractMoodData() {
-    // Example data extraction - modify based on your actual data structure
+  List<Map<String, dynamic>> _extractMoodDataFromHistory() {
     try {
-      if (analyticsData.containsKey('moods') &&
-          analyticsData['moods'] is List) {
-        return List<Map<String, dynamic>>.from(analyticsData['moods']);
+      // If moodHistory is provided, use it
+      if (moodHistory != null && moodHistory!.isNotEmpty) {
+        // Count mood ratings from actual history
+        final Map<String, int> moodCounts = {};
+
+        for (var mood in moodHistory!) {
+          String moodType;
+          int rating;
+
+          // Handle different possible data structures
+          if (mood is Map) {
+            rating = mood['rating'] ?? mood['mood_rating'] ?? 3;
+          } else {
+            // If mood has a rating property directly
+            rating = mood.rating ?? 3;
+          }
+
+          // Convert rating to mood type
+          moodType = _ratingToMoodType(rating);
+
+          moodCounts[moodType] = (moodCounts[moodType] ?? 0) + 1;
+        }
+
+        // Convert to list format
+        return moodCounts.entries
+            .map((entry) => {
+                  'mood_type': entry.key,
+                  'count': entry.value,
+                })
+            .toList();
       }
 
-      // Fallback sample data if structure doesn't match
-      return [
-        {'mood_type': 'happy', 'count': 2},
-        {'mood_type': 'calm', 'count': 3},
-        {'mood_type': 'neutral', 'count': 1},
+      // Fallback: try to extract from analyticsData
+      // Check multiple possible keys for mood data
+      final possibleKeys = [
+        'moods',
+        'mood_data',
+        'mood_distribution',
+        'weekly_ratings'
       ];
+
+      for (String key in possibleKeys) {
+        if (analyticsData.containsKey(key)) {
+          final data = analyticsData[key];
+
+          // Handle weekly_ratings format
+          if (key == 'weekly_ratings' && data is List && data.isNotEmpty) {
+            final Map<String, int> moodCounts = {};
+
+            for (var rating in data) {
+              int ratingValue;
+              if (rating is Map) {
+                ratingValue = rating['rating'] ?? rating['value'] ?? 3;
+              } else if (rating is int) {
+                ratingValue = rating;
+              } else {
+                ratingValue = 3;
+              }
+
+              String moodType = _ratingToMoodType(ratingValue);
+              moodCounts[moodType] = (moodCounts[moodType] ?? 0) + 1;
+            }
+
+            return moodCounts.entries
+                .map((entry) => {
+                      'mood_type': entry.key,
+                      'count': entry.value,
+                    })
+                .toList();
+          }
+
+          // Handle direct mood data format
+          if (data is List && data.isNotEmpty) {
+            return List<Map<String, dynamic>>.from(data);
+          }
+        }
+      }
+
+      // If no mood data found, return empty
+      return [];
     } catch (e) {
-      // Return sample data on error
-      return [
-        {'mood_type': 'happy', 'count': 2},
-        {'mood_type': 'calm', 'count': 1},
-        {'mood_type': 'sad', 'count': 1},
-      ];
+      print('Error extracting mood data: $e'); // Debug print
+      return [];
+    }
+  }
+
+  String _ratingToMoodType(int rating) {
+    switch (rating) {
+      case 1:
+        return 'sad';
+      case 2:
+        return 'anxious';
+      case 3:
+        return 'neutral';
+      case 4:
+        return 'calm';
+      case 5:
+        return 'happy';
+      default:
+        return 'neutral';
     }
   }
 
   Widget _buildMoodDistributionChart(List<Map<String, dynamic>> moodData) {
+    // Debug: Print the analytics data structure
+    print('Analytics Data Keys: ${analyticsData.keys.toList()}');
+    print('Analytics Data: $analyticsData');
+    print('Mood Data: $moodData');
+
+    if (moodData.isEmpty) {
+      return const Center(
+        child: Text(
+          'No mood data available',
+          style: TextStyle(
+            fontSize: 16,
+            color: AppColors.textSecondaryLight,
+          ),
+        ),
+      );
+    }
+
     // Calculate total count for percentages
     int totalCount = 0;
     final Map<String, int> moodCounts = {};
