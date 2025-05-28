@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:mental_health_partner/domain/entities/mood.dart';
 import 'package:mental_health_partner/presentation/themes/app_colors.dart';
 
 class MoodChart extends StatelessWidget {
@@ -40,38 +41,34 @@ class MoodChart extends StatelessWidget {
 
   List<Map<String, dynamic>> _extractMoodDataFromHistory() {
     try {
-      // If moodHistory is provided, use it
       if (moodHistory != null && moodHistory!.isNotEmpty) {
-        // Count mood ratings from actual history
         final Map<String, int> moodCounts = {};
 
         for (var mood in moodHistory!) {
-          String moodType;
           int rating;
 
-          // Handle different possible data structures
-          if (mood is Map) {
-            rating = mood['rating'] ?? mood['mood_rating'] ?? 3;
-          } else {
-            // If mood has a rating property directly
-            rating = mood.rating ?? 3;
+          // Handle API response (Map format)
+          if (mood is Map<String, dynamic>) {
+            rating = mood['score'] ?? // Key changed to 'score'
+                3; // Fallback to neutral
+          }
+          // Handle Mood objects
+          else {
+            rating = (mood as Mood).rating;
           }
 
-          // Convert rating to mood type
-          moodType = _ratingToMoodType(rating);
-
+          rating = rating.clamp(1, 10);
+          String moodType = _ratingToMoodType(rating);
           moodCounts[moodType] = (moodCounts[moodType] ?? 0) + 1;
+
+          // Debug log
+          print('Processed Score: $rating → $moodType');
         }
 
-        // Convert to list format
         return moodCounts.entries
-            .map((entry) => {
-                  'mood_type': entry.key,
-                  'count': entry.value,
-                })
+            .map((entry) => {'mood_type': entry.key, 'count': entry.value})
             .toList();
       }
-
       // Fallback: try to extract from analyticsData
       // Check multiple possible keys for mood data
       final possibleKeys = [
@@ -127,20 +124,12 @@ class MoodChart extends StatelessWidget {
   }
 
   String _ratingToMoodType(int rating) {
-    switch (rating) {
-      case 1:
-        return 'sad';
-      case 2:
-        return 'anxious';
-      case 3:
-        return 'neutral';
-      case 4:
-        return 'calm';
-      case 5:
-        return 'happy';
-      default:
-        return 'neutral';
-    }
+    rating = rating.clamp(1, 10);
+    if (rating <= 2) return 'sad';
+    if (rating <= 4) return 'anxious';
+    if (rating <= 6) return 'neutral';
+    if (rating <= 8) return 'calm';
+    return 'happy'; // 9-10
   }
 
   Widget _buildMoodDistributionChart(List<Map<String, dynamic>> moodData) {

@@ -32,10 +32,15 @@ class AnalyticsBloc extends Bloc<AnalyticsEvent, AnalyticsState> {
     final result = await getMoodAnalytics();
     result.fold(
       (failure) => emit(AnalyticsError(failure.message)),
-      (analytics) => emit(MoodAnalyticsLoaded(
-        analytics: analytics,
-        history: [], // <- fix: added default empty history
-      )),
+      (analytics) {
+        // Safely access the 'results' key and provide fallback
+        final history = analytics['results'] as List<dynamic>? ?? <dynamic>[];
+
+        emit(MoodAnalyticsLoaded(
+          analytics: analytics,
+          history: history,
+        ));
+      },
     );
   }
 

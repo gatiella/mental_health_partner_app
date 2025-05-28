@@ -148,7 +148,7 @@ class _HomePageContent extends StatelessWidget {
                       child: hasData
                           ? MoodChart(
                               analyticsData: analytics,
-                              moodHistory: state.history, // Add this line
+                              moodHistory: state.history,
                             )
                           : const Center(
                               child: Text("No chart data available")),

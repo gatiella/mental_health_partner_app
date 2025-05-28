@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:mental_health_partner/data/datasources/local/analytics_local_data_source.dart';
 import 'package:mental_health_partner/data/models/analytics_model.dart';
 import '../../core/errors/exceptions.dart';
 import '../../core/errors/failure.dart';
@@ -8,10 +9,12 @@ import '../datasources/remote/analytics_remote_data_source.dart';
 
 class AnalyticsRepositoryImpl implements AnalyticsRepository {
   final AnalyticsRemoteDataSource remoteDataSource;
+  final AnalyticsLocalDataSource localDataSource;
   final NetworkInfo networkInfo;
 
   AnalyticsRepositoryImpl({
     required this.remoteDataSource,
+    required this.localDataSource,
     required this.networkInfo,
   });
 
@@ -20,13 +23,17 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
     if (await networkInfo.isConnected) {
       try {
         final analyticsJson = await remoteDataSource.getMoodAnalytics();
-        final analytics = MoodAnalytics.fromJson(analyticsJson);
-        return Right(analytics);
+        final moodAnalytics = MoodAnalytics.fromJson(analyticsJson);
+        await localDataSource.cacheMoodAnalytics(moodAnalytics);
+        return Right(moodAnalytics);
       } on ServerException catch (e) {
         return Left(ServerFailure(message: e.message));
       }
     } else {
-      return const Left(NetworkFailure(message: 'No internet connection'));
+      final cached = await localDataSource.getCachedMoodAnalytics();
+      if (cached != null) return Right(cached);
+      return const Left(
+          NetworkFailure(message: 'No internet and no cached mood analytics'));
     }
   }
 
@@ -35,17 +42,17 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
     if (await networkInfo.isConnected) {
       try {
         final response = await remoteDataSource.getUserActivity();
-        // Convert to UserActivity model
         final activity = UserActivity.fromJson(response);
+        await localDataSource.cacheUserActivity(activity);
         return Right(activity);
       } on ServerException catch (e) {
         return Left(ServerFailure(message: e.message));
-      } catch (e) {
-        return Left(ServerFailure(
-            message: 'Error parsing activity data: ${e.toString()}'));
       }
     } else {
-      return const Left(NetworkFailure(message: 'No internet connection'));
+      final cached = await localDataSource.getCachedUserActivity();
+      if (cached != null) return Right(cached);
+      return const Left(
+          NetworkFailure(message: 'No internet and no cached activity data'));
     }
   }
 }

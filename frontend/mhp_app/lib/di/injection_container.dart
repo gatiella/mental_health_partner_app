@@ -5,6 +5,7 @@ import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:http/http.dart' as http;
 import 'package:mental_health_partner/config/environment.dart';
 import 'package:mental_health_partner/core/storage/secure_storage.dart';
+import 'package:mental_health_partner/data/datasources/local/analytics_local_data_source.dart';
 import 'package:mental_health_partner/domain/usecases/analytics/get_community_engagement.dart';
 import 'package:mental_health_partner/domain/usecases/community/complete_challenge_usecase.dart';
 import 'package:mental_health_partner/domain/usecases/gamification/get_completed_quest_dates_usecase.dart';
@@ -269,10 +270,15 @@ Future<void> init() async {
 
   sl.registerLazySingleton<GetCommunityEngagement>(
       () => GetCommunityEngagement(sl<CommunityRepository>()));
+// Local Data Source
+  sl.registerLazySingleton<AnalyticsLocalDataSource>(
+    () => AnalyticsLocalDataSourceImpl(prefs: sl<SharedPreferences>()),
+  );
 
 // Repositories
   sl.registerLazySingleton<AnalyticsRepository>(() => AnalyticsRepositoryImpl(
         remoteDataSource: sl<AnalyticsRemoteDataSource>(),
+        localDataSource: sl<AnalyticsLocalDataSource>(),
         networkInfo: sl<NetworkInfo>(),
       ));
 

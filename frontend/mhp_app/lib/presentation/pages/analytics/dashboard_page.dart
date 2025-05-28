@@ -6,7 +6,7 @@ import 'package:mental_health_partner/presentation/blocs/analytics/analytics_eve
 import 'package:mental_health_partner/presentation/blocs/analytics/analytics_state.dart';
 import 'package:mental_health_partner/presentation/themes/app_colors.dart';
 import 'package:mental_health_partner/presentation/widgets/analytics/activity_summary.dart';
-import 'package:mental_health_partner/presentation/widgets/mood/mood_chart.dart';
+import 'package:mental_health_partner/presentation/widgets/analytics/mood_summary_card.dart';
 
 class AnalyticsDashboard extends StatelessWidget {
   const AnalyticsDashboard({super.key});
@@ -20,7 +20,7 @@ class AnalyticsDashboard extends StatelessWidget {
         final bloc = sl<AnalyticsBloc>();
         bloc.add(LoadMoodAnalytics());
         bloc.add(LoadUserActivity());
-        bloc.add(LoadCommunityEngagement()); // Add this event
+        bloc.add(LoadCommunityEngagement());
         return bloc;
       },
       child: Scaffold(
@@ -66,8 +66,8 @@ class AnalyticsDashboard extends StatelessWidget {
                   const SizedBox(height: 16),
                   _buildCard(
                     context,
-                    title: "Mood Patterns",
-                    icon: Icons.mood,
+                    title: "Mood Overview",
+                    icon: Icons.psychology,
                     iconColor: AppColors.moodHappy,
                     content: BlocBuilder<AnalyticsBloc, AnalyticsState>(
                       buildWhen: (previous, current) =>
@@ -76,27 +76,9 @@ class AnalyticsDashboard extends StatelessWidget {
                               previous is! MoodAnalyticsLoaded),
                       builder: (context, state) {
                         if (state is MoodAnalyticsLoaded) {
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "Your mood patterns over time",
-                                style: TextStyle(
-                                  color: isDark
-                                      ? AppColors.textSecondaryDark
-                                      : AppColors.textSecondaryLight,
-                                  fontSize: 14,
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              SizedBox(
-                                height: 220,
-                                child: MoodChart(
-                                  analyticsData: state.analytics,
-                                  moodHistory: state.history,
-                                ),
-                              ),
-                            ],
+                          return MoodSummaryCards(
+                            analyticsData: state.analytics,
+                            moodHistory: state.history,
                           );
                         }
                         if (state is AnalyticsError) {
@@ -104,40 +86,14 @@ class AnalyticsDashboard extends StatelessWidget {
                         }
                         return const Center(
                           child: Padding(
-                            padding: EdgeInsets.symmetric(vertical: 40.0),
+                            padding: EdgeInsets.symmetric(vertical: 20.0),
                             child: CircularProgressIndicator(),
                           ),
                         );
                       },
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  _buildCard(
-                    context,
-                    title: "Activity Overview",
-                    icon: Icons.bar_chart_rounded,
-                    iconColor: AppColors.secondaryColor,
-                    content: BlocBuilder<AnalyticsBloc, AnalyticsState>(
-                      buildWhen: (previous, current) =>
-                          current is UserActivityLoaded ||
-                          (current is AnalyticsLoading &&
-                              previous is! UserActivityLoaded),
-                      builder: (context, state) {
-                        if (state is UserActivityLoaded) {
-                          return ActivitySummary(activity: state.activity);
-                        }
-                        if (state is AnalyticsError) {
-                          return _buildErrorWidget(state.message);
-                        }
-                        return const Center(
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(vertical: 40.0),
-                            child: CircularProgressIndicator(),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
+
                   const SizedBox(height: 20),
                   _buildCard(
                     context,

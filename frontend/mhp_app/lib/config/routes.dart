@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mental_health_partner/di/injection_container.dart';
 import 'package:mental_health_partner/domain/entities/community_challenge.dart';
+import 'package:mental_health_partner/presentation/blocs/analytics/analytics_bloc.dart';
+import 'package:mental_health_partner/presentation/blocs/analytics/analytics_event.dart';
 import 'package:mental_health_partner/presentation/blocs/community/community_bloc.dart';
 import 'package:mental_health_partner/presentation/blocs/community/community_event.dart';
 import 'package:mental_health_partner/presentation/blocs/journal/journal_bloc.dart';
@@ -138,7 +140,18 @@ class AppRouter {
           ),
         );
       case analyticsRoute:
-        return MaterialPageRoute(builder: (_) => const AnalyticsDashboard());
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider(
+            create: (context) {
+              final bloc = sl<AnalyticsBloc>();
+              bloc.add(LoadMoodAnalytics());
+              bloc.add(LoadUserActivity());
+              bloc.add(LoadCommunityEngagement());
+              return bloc;
+            },
+            child: const AnalyticsDashboard(),
+          ),
+        );
       case questsRoute:
         return MaterialPageRoute(builder: (_) => const QuestsPage());
       case achievementsRoute:
