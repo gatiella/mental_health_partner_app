@@ -47,12 +47,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     if (emit.isDone) return;
 
     if (result.isLeft()) {
-      emit(AuthError(
-          message: result.swap().getOrElse(() => throw Exception()).message));
+      final failure = result.swap().getOrElse(() => throw Exception());
+      if (failure.message.contains('verify your email')) {
+        emit(EmailVerificationRequired(message: failure.message));
+      } else {
+        emit(AuthError(message: failure.message));
+      }
     } else {
       final userResult = await getUserUseCase();
       if (emit.isDone) return;
-
       userResult.fold(
         (failure) => emit(AuthError(message: failure.message)),
         (user) => emit(Authenticated(user: user)),
@@ -72,18 +75,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(AuthError(
           message: result.swap().getOrElse(() => throw Exception()).message));
     } else {
-      final userResult = await getUserUseCase();
-      if (emit.isDone) return;
-
-      userResult.fold(
-        (failure) => emit(Unauthenticated()),
-        (user) => emit(Authenticated(user: user)),
-      );
+      // Registration successful, show verification message
+      emit(RegistrationSuccess(
+        message:
+            'Account created successfully. Please check your email to verify your account.',
+        email: event.userData['email'],
+      ));
     }
   }
 
   Future<void> _onLogoutRequested(
-    LogoutRequested event, // Now matches parameterless constructor
+    LogoutRequested event,
     Emitter<AuthState> emit,
   ) async {
     emit(AuthLoading());

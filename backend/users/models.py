@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
+import uuid
 
 class CustomUser(AbstractUser):
     """
@@ -11,9 +12,13 @@ class CustomUser(AbstractUser):
     date_of_birth = models.DateField(null=True, blank=True)
     bio = models.TextField(max_length=500, blank=True)
     
+    # Email verification fields
+    is_email_verified = models.BooleanField(default=False)
+    email_verification_token = models.UUIDField(default=uuid.uuid4, editable=False)
+    
     # Additional mental health specific fields
     mental_health_goals = models.TextField(max_length=1000, blank=True)
-    stress_level = models.IntegerField(null=True, blank=True)  # Scale 1-10
+    stress_level = models.IntegerField(null=True, blank=True) # Scale 1-10
     preferred_activities = models.TextField(max_length=500, blank=True)
     
     # Timestamps

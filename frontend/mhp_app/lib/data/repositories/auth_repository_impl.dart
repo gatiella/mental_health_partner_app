@@ -82,6 +82,22 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
+  Future<Either<Failure, Map<String, dynamic>>> verifyEmail(
+      String token) async {
+    if (await networkInfo.isConnected) {
+      try {
+        final response = await remoteDataSource.verifyEmail(token);
+        return Right(response);
+      } on ValidationException catch (e) {
+        return Left(ValidationFailure(message: e.message));
+      } on ServerException catch (e) {
+        return Left(ServerFailure(message: e.message));
+      }
+    } else {
+      return const Left(NetworkFailure(message: 'No internet connection'));
+    }
+  }
+
   @override
   Future<Either<Failure, UserModel>> getUserProfile() async {
     try {

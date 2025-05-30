@@ -30,11 +30,22 @@ class RegisterPage extends StatelessWidget {
           listener: (context, state) {
             if (state is AuthError) {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(state.message)),
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: Colors.red,
+                ),
               );
             }
-            if (state is Authenticated) {
-              Navigator.pushReplacementNamed(context, AppRouter.homeRoute);
+            if (state is RegistrationSuccess) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: Colors.green,
+                  duration: const Duration(seconds: 5),
+                ),
+              );
+              // Show email verification dialog
+              _showEmailVerificationDialog(context, state.email);
             }
           },
           builder: (context, state) {
@@ -125,6 +136,53 @@ class RegisterPage extends StatelessWidget {
           },
         ),
       ],
+    );
+  }
+
+  void _showEmailVerificationDialog(BuildContext context, String email) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Check Your Email'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.email,
+                size: 64,
+                color: Colors.blue,
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'We\'ve sent a verification link to:',
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                email,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Please check your email and click the verification link to activate your account.',
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.pushReplacementNamed(context, AppRouter.loginRoute);
+              },
+              child: const Text('Go to Login'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

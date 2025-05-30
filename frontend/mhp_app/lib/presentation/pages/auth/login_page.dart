@@ -30,8 +30,21 @@ class LoginPage extends StatelessWidget {
           listener: (context, state) {
             if (state is AuthError) {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(state.message)),
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: Colors.red,
+                ),
               );
+            }
+            if (state is EmailVerificationRequired) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: Colors.orange,
+                  duration: const Duration(seconds: 5),
+                ),
+              );
+              _showEmailVerificationDialog(context);
             }
             if (state is Authenticated && !_hasNavigated) {
               _hasNavigated = true;
@@ -103,6 +116,40 @@ class LoginPage extends StatelessWidget {
           },
         ),
       ],
+    );
+  }
+
+  void _showEmailVerificationDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Email Verification Required'),
+          content: const Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.warning,
+                size: 64,
+                color: Colors.orange,
+              ),
+              SizedBox(height: 16),
+              Text(
+                'Please verify your email address before logging in. Check your email for the verification link.',
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

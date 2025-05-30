@@ -10,6 +10,7 @@ abstract class AuthRemoteDataSource {
   Future<Map<String, dynamic>> register(Map<String, dynamic> userData);
   Future<UserModel> getUserProfile();
   Future<Map<String, dynamic>> refreshToken(String refreshToken);
+  Future<Map<String, dynamic>> verifyEmail(String token);
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -24,10 +25,13 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         ApiConfig.login,
         data: {'email': email, 'password': password},
       );
-
       return response.data;
     } on DioException catch (e) {
       if (e.response?.statusCode == 401) {
+        final errorData = e.response?.data;
+        if (errorData is Map<String, dynamic> && errorData['error'] != null) {
+          throw UnauthorizedException(message: errorData['error']);
+        }
         throw UnauthorizedException(message: 'Invalid credentials');
       }
       throw ServerException(message: e.message ?? 'Server error');
@@ -38,7 +42,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<Map<String, dynamic>> register(Map<String, dynamic> userData) async {
     try {
       final response = await client.post(ApiConfig.register, data: userData);
-
       return response.data;
     } on DioException catch (e) {
       if (e.response?.statusCode == 400) {
@@ -52,7 +55,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<UserModel> getUserProfile() async {
     try {
       final response = await client.get(ApiConfig.userProfile);
-
       // If the response is directly the user object
       if (response.data is Map<String, dynamic>) {
         return UserModel.fromJson(response.data);
@@ -61,7 +63,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       else if (response.data['user'] != null) {
         return UserModel.fromJson(response.data['user']);
       }
-
       throw ServerException(message: 'Invalid response format');
     } on DioException catch (e) {
       if (e.response?.statusCode == 401) {
@@ -79,10 +80,26 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         data: {'refresh': refreshToken},
         options: Options(headers: {'Authorization': null}),
       );
-
       return response.data;
     } on DioException {
       throw UnauthorizedException(message: 'Failed to refresh token');
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> verifyEmail(String token) async {
+    try {
+      final response = await client.post('${ApiConfig.verifyEmail}/$token/');
+      return response.data;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 400) {
+        final errorData = e.response?.data;
+        if (errorData is Map<String, dynamic> && errorData['error'] != null) {
+          throw ValidationException(message: errorData['error']);
+        }
+        throw ValidationException(message: 'Invalid verification token');
+      }
+      throw ServerException(message: e.message ?? 'Server error');
     }
   }
 }

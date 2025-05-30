@@ -19,7 +19,7 @@ class ApiConfig {
   static String get register => '/api/users/register/';
   static String get refreshToken => '/api/users/token/refresh/';
   static String get userProfile => '/api/users/profile/';
-
+  static const String verifyEmail = '/api/users/verify-email';
 // Conversation endpoints
   static String get conversations => '/api/conversation/';
   static String sendMessage(String conversationId) =>

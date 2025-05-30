@@ -160,9 +160,9 @@ class MoodSummaryCards extends StatelessWidget {
       firstAvg /= firstHalf.length;
       secondAvg /= secondHalf.length;
 
-      if (secondAvg > firstAvg + 0.5)
+      if (secondAvg > firstAvg + 0.5) {
         trend = 'improving';
-      else if (secondAvg < firstAvg - 0.5) trend = 'declining';
+      } else if (secondAvg < firstAvg - 0.5) trend = 'declining';
     }
 
     return {
