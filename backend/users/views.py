@@ -135,9 +135,11 @@ class ForgotPasswordView(APIView):
             return Response({
                 'message': 'Password reset link sent to your email'
             }, status=status.HTTP_200_OK)
+    
     def send_reset_email(self, user):
         # Use regular HTTP URL that's clickable in emails
-        reset_url = f"{settings.FRONTEND_URL}/api/users/reset-redirect/{user.password_reset_token}/"
+        #reset_url = f"{settings.FRONTEND_URL}/api/users/reset-redirect/{user.password_reset_token}/"
+        reset_url = f"{settings.FRONTEND_URL}/api/users/web-reset/{user.password_reset_token}/"
         
         subject = "Reset Your Password - Mental Health Partner"
         message = f"""
@@ -206,25 +208,50 @@ class ResetPasswordView(APIView):
             
         except User.DoesNotExist:
             return Response({'error': 'Invalid reset token'}, status=status.HTTP_400_BAD_REQUEST)
-        
+
 class WebResetPasswordFormView(View):
     def get(self, request, token):
-        user = get_object_or_404(User, password_reset_token=token)
-        return render(request, 'auth/web_reset_form.html', {'token': token})
+        try:
+            user = User.objects.get(password_reset_token=token)
+            return render(request, 'auth/web_reset_form.html', {
+                'token': token,
+                'valid': True
+            })
+        except User.DoesNotExist:
+            return render(request, 'auth/web_reset_form.html', {
+                'token': token,
+                'valid': False,
+                'error': 'Invalid or expired reset token'
+            })
 
     def post(self, request, token):
         password = request.POST.get('password')
         confirm_password = request.POST.get('confirm_password')
 
+        if not password or not confirm_password:
+            return render(request, 'auth/web_reset_form.html', {
+                'token': token,
+                'valid': True,
+                'error': 'Both password fields are required'
+            })
+
         if password != confirm_password:
             return render(request, 'auth/web_reset_form.html', {
                 'token': token,
+                'valid': True,
                 'error': 'Passwords do not match'
             })
 
-        user = get_object_or_404(User, password_reset_token=token)
-        user.set_password(password)
-        user.password_reset_token = None
-        user.save()
-        return render(request, 'auth/web_reset_success.html')
-        
+        try:
+            user = User.objects.get(password_reset_token=token)
+            user.set_password(password)
+            user.password_reset_token = None
+            user.save()
+            # Render success page with deep link
+            return render(request, 'auth/web_reset_success.html')
+        except User.DoesNotExist:
+            return render(request, 'auth/web_reset_form.html', {
+                'token': token,
+                'valid': False,
+                'error': 'Invalid or expired reset token'
+            })
