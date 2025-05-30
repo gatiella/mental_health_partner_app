@@ -22,7 +22,7 @@ class Environment {
     switch (_environmentType) {
       case EnvironmentType.development:
         return {
-          'API_BASE_URL': 'http://192.168.250.204:8000/',
+          'API_BASE_URL': 'http://192.168.47.204:8000/',
           'API_TIMEOUT': '30000', // milliseconds
           'LOG_LEVEL': 'verbose',
         };

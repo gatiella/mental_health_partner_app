@@ -15,4 +15,6 @@ abstract class AuthRepository {
   Future<Either<Failure, UserModel>> getUserProfile();
   Future<Either<Failure, bool>> logout();
   Future<Either<Failure, bool>> isAuthenticated();
+  Future<Either<Failure, String>> forgotPassword(String email);
+  Future<Either<Failure, String>> resetPassword(String token, String password);
 }

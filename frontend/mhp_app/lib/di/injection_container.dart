@@ -7,6 +7,8 @@ import 'package:mental_health_partner/config/environment.dart';
 import 'package:mental_health_partner/core/storage/secure_storage.dart';
 import 'package:mental_health_partner/data/datasources/local/analytics_local_data_source.dart';
 import 'package:mental_health_partner/domain/usecases/analytics/get_community_engagement.dart';
+import 'package:mental_health_partner/domain/usecases/auth/forgot_password_use_case.dart';
+import 'package:mental_health_partner/domain/usecases/auth/reset_password_use_case.dart';
 import 'package:mental_health_partner/domain/usecases/community/complete_challenge_usecase.dart';
 import 'package:mental_health_partner/domain/usecases/gamification/get_completed_quest_dates_usecase.dart';
 import 'package:mental_health_partner/domain/usecases/gamification/get_user_streak_usecase.dart';
@@ -155,12 +157,16 @@ Future<void> init() async {
     ),
   );
 
-  // ========================== Auth Feature ==========================
+// ========================== Auth Feature ==========================
   sl.registerFactory<AuthBloc>(() => AuthBloc(
         loginUseCase: sl<LoginUseCase>(),
         registerUseCase: sl<RegisterUseCase>(),
         logoutUseCase: sl<LogoutUseCase>(),
         getUserUseCase: sl<GetUserUseCase>(),
+        forgotPasswordUseCase:
+            sl<ForgotPasswordUseCase>(), // Fixed: use service locator
+        resetPasswordUseCase:
+            sl<ResetPasswordUseCase>(), // Fixed: use service locator
       ));
 
   sl.registerLazySingleton<LoginUseCase>(
@@ -172,6 +178,12 @@ Future<void> init() async {
   sl.registerLazySingleton<GetUserUseCase>(
       () => GetUserUseCase(sl<AuthRepository>()));
 
+// Add these missing registrations
+  sl.registerLazySingleton<ForgotPasswordUseCase>(
+      () => ForgotPasswordUseCase(sl<AuthRepository>()));
+  sl.registerLazySingleton<ResetPasswordUseCase>(
+      () => ResetPasswordUseCase(sl<AuthRepository>()));
+
   sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(
         remoteDataSource: sl<AuthRemoteDataSource>(),
         localDataSource: sl<AuthLocalDataSource>(),
@@ -180,7 +192,6 @@ Future<void> init() async {
 
   sl.registerLazySingleton<AuthRemoteDataSource>(
       () => AuthRemoteDataSourceImpl(client: sl<ApiClient>()));
-
   sl.registerLazySingleton<AuthLocalDataSource>(() => AuthLocalDataSourceImpl(
         secureStorage: sl<SecureStorage>(),
         localStorage: sl<LocalStorage>(),

@@ -11,6 +11,8 @@ abstract class AuthRemoteDataSource {
   Future<UserModel> getUserProfile();
   Future<Map<String, dynamic>> refreshToken(String refreshToken);
   Future<Map<String, dynamic>> verifyEmail(String token);
+  Future<Map<String, dynamic>> forgotPassword(String email); // Add this
+  Future<Map<String, dynamic>> resetPassword(String token, String password);
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -98,6 +100,40 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           throw ValidationException(message: errorData['error']);
         }
         throw ValidationException(message: 'Invalid verification token');
+      }
+      throw ServerException(message: e.message ?? 'Server error');
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> forgotPassword(String email) async {
+    try {
+      final response = await client.post(
+        ApiConfig.forgotPassword,
+        data: {'email': email},
+      );
+      return response.data;
+    } on DioException catch (e) {
+      throw ServerException(message: e.message ?? 'Server error');
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> resetPassword(
+      String token, String password) async {
+    try {
+      final response = await client.post(
+        '${ApiConfig.resetPassword}/$token/',
+        data: {'password': password},
+      );
+      return response.data;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 400) {
+        final errorData = e.response?.data;
+        if (errorData is Map<String, dynamic> && errorData['error'] != null) {
+          throw ValidationException(message: errorData['error']);
+        }
+        throw ValidationException(message: 'Invalid reset token');
       }
       throw ServerException(message: e.message ?? 'Server error');
     }

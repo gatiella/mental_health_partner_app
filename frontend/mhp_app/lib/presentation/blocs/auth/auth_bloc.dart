@@ -1,4 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mental_health_partner/domain/usecases/auth/forgot_password_use_case.dart';
+import 'package:mental_health_partner/domain/usecases/auth/reset_password_use_case.dart';
 import '../../../domain/usecases/auth/login_usecase.dart';
 import '../../../domain/usecases/auth/register_usecase.dart';
 import '../../../domain/usecases/auth/logout_usecase.dart';
@@ -11,12 +13,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final RegisterUseCase registerUseCase;
   final LogoutUseCase logoutUseCase;
   final GetUserUseCase getUserUseCase;
+  final ForgotPasswordUseCase forgotPasswordUseCase;
+  final ResetPasswordUseCase resetPasswordUseCase;
 
   AuthBloc({
     required this.loginUseCase,
     required this.registerUseCase,
     required this.logoutUseCase,
     required this.getUserUseCase,
+    required this.forgotPasswordUseCase,
+    required this.resetPasswordUseCase,
   }) : super(AuthInitial()) {
     on<CheckAuthStatus>(_onCheckAuthStatus);
     on<LoginRequested>(_onLoginRequested);
@@ -24,6 +30,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<LogoutRequested>(_onLogoutRequested);
     on<GetUserRequested>(_onGetUserRequested);
     on<UpdateUserData>(_onUpdateUserData);
+    on<ForgotPasswordRequested>(_onForgotPasswordRequested); // Add this
+    on<ResetPasswordRequested>(_onResetPasswordRequested);
   }
 
   Future<void> _onCheckAuthStatus(
@@ -116,5 +124,29 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     if (currentState is Authenticated) {
       emit(Authenticated(user: event.user));
     }
+  }
+
+  Future<void> _onForgotPasswordRequested(
+    ForgotPasswordRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+    final result = await forgotPasswordUseCase(event.email);
+    result.fold(
+      (failure) => emit(AuthError(message: failure.message)),
+      (message) => emit(ForgotPasswordSuccess(message: message)),
+    );
+  }
+
+  Future<void> _onResetPasswordRequested(
+    ResetPasswordRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+    final result = await resetPasswordUseCase(event.token, event.password);
+    result.fold(
+      (failure) => emit(AuthError(message: failure.message)),
+      (message) => emit(ResetPasswordSuccess(message: message)),
+    );
   }
 }

@@ -15,6 +15,7 @@ class CustomUser(AbstractUser):
     # Email verification fields
     is_email_verified = models.BooleanField(default=False)
     email_verification_token = models.UUIDField(default=uuid.uuid4, editable=False)
+    password_reset_token = models.UUIDField(null=True, blank=True) 
     
     # Additional mental health specific fields
     mental_health_goals = models.TextField(max_length=1000, blank=True)

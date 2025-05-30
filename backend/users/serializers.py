@@ -103,3 +103,20 @@ class TokenSerializer(serializers.Serializer):
             'access': str(refresh.access_token),
             'user': UserSerializer(user).data
         }
+class ForgotPasswordSerializer(serializers.Serializer):
+    """
+    Serializer for forgot password request.
+    """
+    email = serializers.EmailField()
+
+class ResetPasswordSerializer(serializers.Serializer):
+    """
+    Serializer for password reset.
+    """
+    password = serializers.CharField(write_only=True, min_length=8)
+    password_confirm = serializers.CharField(write_only=True)
+    
+    def validate(self, attrs):
+        if attrs['password'] != attrs['password_confirm']:
+            raise serializers.ValidationError({"password": "Password fields didn't match."})
+        return attrs        

@@ -50,3 +50,17 @@ class EmailVerificationRequired extends AuthState {
   @override
   List<Object> get props => [message];
 }
+
+class ForgotPasswordSuccess extends AuthState {
+  final String message;
+  const ForgotPasswordSuccess({required this.message});
+  @override
+  List<Object> get props => [message];
+}
+
+class ResetPasswordSuccess extends AuthState {
+  final String message;
+  const ResetPasswordSuccess({required this.message});
+  @override
+  List<Object> get props => [message];
+}

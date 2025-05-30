@@ -31,7 +31,10 @@ class ForgotPasswordPage extends StatelessWidget {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text(state.message)),
                   );
-                } else if (state is Unauthenticated) {
+                } else if (state is ForgotPasswordSuccess) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(state.message)),
+                  );
                   Navigator.pop(context);
                 }
               },
@@ -41,9 +44,11 @@ class ForgotPasswordPage extends StatelessWidget {
                   onPressed: state is AuthLoading
                       ? null
                       : () {
-                          context.read<AuthBloc>().add(
-                                ForgotPasswordRequested(emailController.text),
-                              );
+                          if (emailController.text.isNotEmpty) {
+                            context.read<AuthBloc>().add(
+                                  ForgotPasswordRequested(emailController.text),
+                                );
+                          }
                         },
                   isLoading: state is AuthLoading,
                 );
