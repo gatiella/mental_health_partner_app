@@ -49,7 +49,7 @@ Before you begin, ensure you have the following installed:
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/mental-health-partner.git
+   git clone https://github.com/gatiella/mental-health-partner.git
    cd mental-health-partner
    ```
 
@@ -166,8 +166,8 @@ We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.
 If you encounter any issues or have questions:
 
 - 📧 **Email**: support@mentalhealthpartner.com
-- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/yourusername/mental-health-partner/issues)
-- 💬 **Discussions**: [GitHub Discussions](https://github.com/yourusername/mental-health-partner/discussions)
+- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/gatiella/mental-health-partner/issues)
+- 💬 **Discussions**: [GitHub Discussions](https://github.com/gatiella/mental-health-partner/discussions)
 
 ---
 
