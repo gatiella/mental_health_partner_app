@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html><head>
+    
+
+      
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="robots" content="NONE,NOARCHIVE">
+      
+
+      <title>Api Root – Django REST framework</title>
+
+      
+        
+          <link rel="stylesheet" type="text/css" href="Api%20Root%20%E2%80%93%20Django%20REST%20framework_files/bootstrap.min.css">
+          <link rel="stylesheet" type="text/css" href="Api%20Root%20%E2%80%93%20Django%20REST%20framework_files/bootstrap-tweaks.css">
+        
+
+        <link rel="stylesheet" type="text/css" href="Api%20Root%20%E2%80%93%20Django%20REST%20framework_files/prettify.css">
+        <link rel="stylesheet" type="text/css" href="Api%20Root%20%E2%80%93%20Django%20REST%20framework_files/default.css">
+        
+      
+
+    
+  </head>
+
+  
+  <body class="">
+
+    <div class="wrapper">
+      
+        <div class="navbar navbar-static-top navbar-inverse" role="navigation" aria-label="navbar">
+          <div class="container">
+            <span>
+              
+                <a class="navbar-brand" rel="nofollow" href="https://www.django-rest-framework.org/">
+                    Django REST framework
+                </a>
+              
+            </span>
+            <ul class="nav navbar-nav pull-right">
+              
+                
+                  
+                
+              
+            </ul>
+          </div>
+        </div>
+      
+
+      <div class="container">
+        
+          <ul class="breadcrumb">
+            
+              
+                <li class="active"><a href="http://127.0.0.1:8000/api/">Api Root</a></li>
+              
+            
+          </ul>
+        
+
+        <!-- Content -->
+        <div id="content" role="main" aria-label="content">
+          
+
+          <div class="region" aria-label="request form">
+          
+
+          
+            <form id="get-form" class="pull-right">
+              <fieldset>
+                
+                  <div class="btn-group format-selection">
+                    <a class="btn btn-primary js-tooltip" href="http://127.0.0.1:8000/api/" rel="nofollow" title="" data-original-title="Make a GET request on the Api Root resource">GET</a>
+
+                    <button class="btn btn-primary dropdown-toggle js-tooltip" data-toggle="dropdown" title="" data-original-title="Specify a format for the GET request">
+                      <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                      
+                        <li>
+                          <a class="js-tooltip format-option" href="http://127.0.0.1:8000/api/?format=json" rel="nofollow" title="" data-original-title="Make a GET request on the Api Root resource with the format set to `json`">json</a>
+                        </li>
+                      
+                        <li>
+                          <a class="js-tooltip format-option" href="http://127.0.0.1:8000/api/?format=api" rel="nofollow" title="" data-original-title="Make a GET request on the Api Root resource with the format set to `api`">api</a>
+                        </li>
+                      
+                    </ul>
+                  </div>
+                
+              </fieldset>
+            </form>
+          
+
+          
+            <form class="button-form" action="/api/" data-method="OPTIONS">
+              <button class="btn btn-primary js-tooltip" title="" data-original-title="Make an OPTIONS request on the Api Root resource">OPTIONS</button>
+            </form>
+          
+
+          
+
+          
+
+          
+
+          
+          </div>
+
+            <div class="content-main" role="main" aria-label="main content">
+              <div class="page-header">
+                <h1>Api Root</h1>
+              </div>
+              <div style="float:left">
+                
+                  <p></p>
+                
+              </div>
+
+              
+
+              <div class="request-info" style="clear: both" aria-label="request info">
+                <pre class="prettyprint"><b><span class="pln">GET</span></b><span class="pln"> </span><span class="pun">/</span><span class="pln">api</span><span class="pun">/</span></pre>
+              </div>
+
+              <div class="response-info" aria-label="response info">
+                <pre class="prettyprint"><span class="meta nocode"><b>HTTP 200 OK</b>
+<b>Allow:</b> <span class="lit">OPTIONS, GET</span>
+<b>Content-Type:</b> <span class="lit">application/json</span>
+<b>Vary:</b> <span class="lit">Accept</span>
+
+</span><span class="pun">{</span><span class="pln">
+    </span><span class="str">"message"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"Mental Health Partner API"</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">"endpoints"</span><span class="pun">:</span><span class="pln"> </span><span class="pun">{</span><span class="pln">
+        </span><span class="str">"users"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"/api/users/"</span><span class="pun">,</span><span class="pln">
+        </span><span class="str">"conversation"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"/api/conversation/"</span><span class="pun">,</span><span class="pln">
+        </span><span class="str">"journal"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"/api/journal/"</span><span class="pun">,</span><span class="pln">
+        </span><span class="str">"mood"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"/api/mood/"</span><span class="pun">,</span><span class="pln">
+        </span><span class="str">"analytics"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"/api/analytics/"</span><span class="pun">,</span><span class="pln">
+        </span><span class="str">"gamification"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"/api/gamification/"</span><span class="pun">,</span><span class="pln">
+        </span><span class="str">"community"</span><span class="pun">:</span><span class="pln"> </span><span class="str">"/api/community/"</span><span class="pln">
+    </span><span class="pun">}</span><span class="pln">
+</span><span class="pun">}</span></pre>
+              </div>
+            </div>
+
+            
+              
+
+              
+            
+          
+        </div><!-- /.content -->
+      </div><!-- /.container -->
+    </div><!-- ./wrapper -->
+
+    
+
+    
+      <script>
+        window.drf = {
+          csrfHeaderName: "X-CSRFTOKEN",
+          csrfToken: "4hxvp5Zn5Lldzar0TbvgB9xqGYLrlomidy4n5RYu4i0JwqfHoGyNEHunj0mYkyMR"
+        };
+      </script>
+      <script src="Api%20Root%20%E2%80%93%20Django%20REST%20framework_files/jquery-3.5.1.min.js"></script>
+      <script src="Api%20Root%20%E2%80%93%20Django%20REST%20framework_files/ajax-form.js"></script>
+      <script src="Api%20Root%20%E2%80%93%20Django%20REST%20framework_files/csrf.js"></script>
+      <script src="Api%20Root%20%E2%80%93%20Django%20REST%20framework_files/bootstrap.min.js"></script>
+      <script src="Api%20Root%20%E2%80%93%20Django%20REST%20framework_files/prettify-min.js"></script>
+      <script src="Api%20Root%20%E2%80%93%20Django%20REST%20framework_files/default.js"></script>
+      <script>
+        $(document).ready(function() {
+          $('form').ajaxForm();
+        });
+      </script>
+    
+
+  
+  
+
+</body></html>

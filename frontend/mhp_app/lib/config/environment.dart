@@ -22,13 +22,14 @@ class Environment {
     switch (_environmentType) {
       case EnvironmentType.development:
         return {
-          'API_BASE_URL': 'http://192.168.230.204:8000/',
+          'API_BASE_URL': 'https://mentalhealthpartner.up.railway.app/',
+          // 'API_BASE_URL': 'http://192.168.74.204:8000/',
           'API_TIMEOUT': '30000', // milliseconds
           'LOG_LEVEL': 'verbose',
         };
       case EnvironmentType.production:
         return {
-          'API_BASE_URL': 'https://api.mentalhealthpartner.com',
+          'API_BASE_URL': 'https://mentalhealthpartner.up.railway.app/',
           'API_TIMEOUT': '30000', // milliseconds
           'LOG_LEVEL': 'error',
         };
