@@ -21,6 +21,7 @@ class AuthLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
+        height: MediaQuery.of(context).size.height,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,

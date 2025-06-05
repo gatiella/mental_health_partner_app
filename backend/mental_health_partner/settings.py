@@ -151,26 +151,29 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'  # For production
-STATICFILES_DIRS = [BASE_DIR / 'static']  # For development
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# Ensure staticfiles finders are properly configured
-STATICFILES_FINDERS = [
-    'django.contrib.staticfiles.finders.FileSystemFinder',
-    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-]
-
+# Media files configuration
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = BASE_DIR / 'media'
 
-# Default primary key field type
+# Configure Whitenoise to serve media files too
+WHITENOISE_USE_FINDERS = True
+WHITENOISE_AUTOREFRESH = True
+
+# Add media files to Whitenoise (not recommended for production with user uploads)
+# Only use this for small projects or if you're not using cloud storage
+import os
+os.makedirs(MEDIA_ROOT, exist_ok=True)
+os.makedirs(STATIC_ROOT, exist_ok=True)
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Custom User Model
 AUTH_USER_MODEL = 'users.CustomUser'
+
 
 # REST Framework settings
 REST_FRAMEWORK = {
@@ -181,9 +184,33 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10
+    'PAGE_SIZE': 10,
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+        # Remove this line to disable browsable API
+        # 'rest_framework.renderers.BrowsableAPIRenderer',
+    ]
 }
-
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django.template': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+}
 # JWT Settings
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),

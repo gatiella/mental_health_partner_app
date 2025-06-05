@@ -31,13 +31,7 @@ class SuccessStoriesPage extends StatelessWidget {
               separatorBuilder: (_, __) => const SizedBox(height: 16),
               itemBuilder: (context, index) {
                 final story = state.stories[index];
-                return SuccessStoryCard(
-                  story: story,
-                  onEncouragementPressed: () =>
-                      context.read<CommunityBloc>().add(
-                            ToggleStoryEncouragement(storyId: story.id),
-                          ),
-                );
+                return SuccessStoryCard(story: story);
               },
             );
           } else if (state is CommunityError) {

@@ -204,7 +204,7 @@ class SideMenu extends StatelessWidget {
         hoverColor: theme.colorScheme.primary.withOpacity(0.1),
         splashColor: theme.colorScheme.primary.withOpacity(0.2),
         onTap: () {
-          Navigator.pop(context);
+          // Removed Navigator.pop(context) - drawer will stay open
           Navigator.pushNamed(context, route);
         },
       ),

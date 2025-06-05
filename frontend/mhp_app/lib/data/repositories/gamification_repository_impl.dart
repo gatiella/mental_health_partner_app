@@ -67,9 +67,9 @@ class GamificationRepositoryImpl implements GamificationRepository {
       int questId, int? moodBefore) async {
     if (await networkInfo.isConnected) {
       try {
-        final userQuest =
+        final userQuestModel =
             await remoteDataSource.startQuest(questId, moodBefore);
-        return Right(userQuest as UserQuest);
+        return Right(userQuestModel.toEntity());
       } on AuthException {
         return const Left(AuthFailure(
             message: "Authentication failed. Please log in again."));

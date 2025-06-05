@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mental_health_partner/presentation/blocs/app_streak/app_streak_bloc.dart';
 import 'package:mental_health_partner/presentation/blocs/auth/auth_event.dart';
 import 'package:mental_health_partner/presentation/blocs/community/community_bloc.dart';
 import 'package:mental_health_partner/presentation/blocs/conversation/conversation_bloc.dart';
@@ -51,6 +52,9 @@ class _MentalHealthAppState extends State<MentalHealthApp> {
         BlocProvider<CommunityBloc>(create: (_) => sl<CommunityBloc>()),
         BlocProvider<GamificationBloc>(
             create: (context) => sl<GamificationBloc>()),
+        BlocProvider<AppStreakBloc>(
+          create: (context) => AppStreakBloc(),
+        ),
       ],
       child: Builder(
         builder: (context) {

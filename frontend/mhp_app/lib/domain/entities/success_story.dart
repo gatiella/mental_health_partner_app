@@ -1,5 +1,3 @@
-// lib/domain/entities/success_story.dart
-
 import 'package:equatable/equatable.dart';
 
 class SuccessStory extends Equatable {
@@ -26,6 +24,31 @@ class SuccessStory extends Equatable {
     required this.encouragementCount,
     required this.hasEncouraged,
   });
+
+  SuccessStory copyWith({
+    String? title,
+    String? content,
+    String? authorId,
+    String? authorName,
+    bool? isAnonymous,
+    DateTime? createdAt,
+    String? category,
+    int? encouragementCount,
+    bool? hasEncouraged,
+  }) {
+    return SuccessStory(
+      id: id,
+      title: title ?? this.title,
+      content: content ?? this.content,
+      authorId: authorId ?? this.authorId,
+      authorName: authorName ?? this.authorName,
+      isAnonymous: isAnonymous ?? this.isAnonymous,
+      createdAt: createdAt ?? this.createdAt,
+      category: category ?? this.category,
+      encouragementCount: encouragementCount ?? this.encouragementCount,
+      hasEncouraged: hasEncouraged ?? this.hasEncouraged,
+    );
+  }
 
   @override
   List<Object?> get props => [

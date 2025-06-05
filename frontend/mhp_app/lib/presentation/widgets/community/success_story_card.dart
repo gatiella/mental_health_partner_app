@@ -1,17 +1,18 @@
-// lib/presentation/widgets/community/success_story_card.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mental_health_partner/domain/entities/success_story.dart';
+import 'package:mental_health_partner/presentation/blocs/community/community_bloc.dart';
+import 'package:mental_health_partner/presentation/blocs/community/community_event.dart';
 import '../../themes/app_colors.dart';
 import 'encouragement_button.dart';
+import 'success_story_detail_page.dart';
 
 class SuccessStoryCard extends StatelessWidget {
   final SuccessStory story;
-  final VoidCallback onEncouragementPressed;
 
   const SuccessStoryCard({
     super.key,
     required this.story,
-    required this.onEncouragementPressed,
   });
 
   @override
@@ -23,63 +24,78 @@ class SuccessStoryCard extends StatelessWidget {
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    story.title,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      color: isDark
-                          ? AppColors.textPrimaryDark
-                          : AppColors.textPrimaryLight,
-                      fontWeight: FontWeight.w600,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () => _navigateToStoryDetail(context),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      story.title,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: isDark
+                            ? AppColors.textPrimaryDark
+                            : AppColors.textPrimaryLight,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
-                ),
-                EncouragementButton(
-                  isEncouraged: story.hasEncouraged,
-                  count: story.encouragementCount,
-                  onPressed: onEncouragementPressed,
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              story.content,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: isDark
-                    ? AppColors.textSecondaryDark
-                    : AppColors.textSecondaryLight,
-              ),
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Chip(
-                  label: Text(story.category),
-                  backgroundColor: _getCategoryColor(story.category),
-                ),
-                const Spacer(),
-                Text(
-                  _formatDate(story.createdAt),
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: isDark
-                        ? AppColors.textSecondaryDark
-                        : AppColors.textSecondaryLight,
+                  EncouragementButton(
+                    isEncouraged: story.hasEncouraged,
+                    count: story.encouragementCount,
+                    onPressed: () => context.read<CommunityBloc>().add(
+                          ToggleStoryEncouragement(storyId: story.id),
+                        ),
                   ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                story.content,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: isDark
+                      ? AppColors.textSecondaryDark
+                      : AppColors.textSecondaryLight,
                 ),
-              ],
-            ),
-          ],
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Chip(
+                    label: Text(story.category),
+                    backgroundColor: _getCategoryColor(story.category),
+                  ),
+                  const Spacer(),
+                  Text(
+                    _formatDate(story.createdAt),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: isDark
+                          ? AppColors.textSecondaryDark
+                          : AppColors.textSecondaryLight,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
+      ),
+    );
+  }
+
+  void _navigateToStoryDetail(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SuccessStoryDetailPage(story: story),
       ),
     );
   }

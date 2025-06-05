@@ -10,6 +10,7 @@ import 'package:mental_health_partner/domain/usecases/analytics/get_community_en
 import 'package:mental_health_partner/domain/usecases/auth/forgot_password_use_case.dart';
 import 'package:mental_health_partner/domain/usecases/auth/reset_password_use_case.dart';
 import 'package:mental_health_partner/domain/usecases/community/complete_challenge_usecase.dart';
+import 'package:mental_health_partner/domain/usecases/community/create_success_story_usecase.dart';
 import 'package:mental_health_partner/domain/usecases/gamification/get_completed_quest_dates_usecase.dart';
 import 'package:mental_health_partner/domain/usecases/gamification/get_user_streak_usecase.dart';
 import 'package:mental_health_partner/presentation/blocs/profile/profile_bloc.dart';
@@ -411,6 +412,7 @@ Future<void> init() async {
         sendEncouragement: sl<SendEncouragementUseCase>(),
         getThreadDetails: sl<GetThreadDetailsUseCase>(),
         completeChallenge: sl<CompleteChallengeUseCase>(),
+        createSuccessStory: sl<CreateSuccessStoryUseCase>(), // ✅ Add this line
       ));
 
 // Use Cases
@@ -434,6 +436,8 @@ Future<void> init() async {
       () => GetThreadDetailsUseCase(sl<CommunityRepository>()));
   sl.registerLazySingleton<CompleteChallengeUseCase>(
       () => CompleteChallengeUseCase(sl<CommunityRepository>()));
+  sl.registerLazySingleton<CreateSuccessStoryUseCase>(
+      () => CreateSuccessStoryUseCase(sl<CommunityRepository>()));
 
 // Repository and Data Sources
   sl.registerLazySingleton<CommunityRepository>(() => CommunityRepositoryImpl(

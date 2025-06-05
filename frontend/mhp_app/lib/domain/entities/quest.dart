@@ -10,6 +10,7 @@ class Quest {
   final String? image;
   final bool isCompleted;
   final double progress;
+  final String? imageUrl;
 
   Quest({
     required this.id,
@@ -21,6 +22,7 @@ class Quest {
     required this.instructions,
     required this.difficulty,
     this.image,
+    this.imageUrl,
     required this.isCompleted,
     required this.progress,
   });

@@ -60,23 +60,125 @@ class _QuestDetailPageState extends State<QuestDetailPage> {
             Future.delayed(const Duration(seconds: 1), () {
               context.read<GamificationBloc>().add(LoadEarnedAchievements());
             });
+          } else if (state is StartQuestError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Error starting quest: ${state.message}')),
+            );
+          } else if (state is CompleteQuestError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                  content: Text('Error completing quest: ${state.message}')),
+            );
           }
         },
         builder: (context, state) {
+          // Show loading indicator when starting or completing quest
+          bool isLoading = state is StartingQuest || state is CompletingQuest;
+
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (widget.quest.image != null)
+                // Fixed image loading section
+                if (widget.quest.imageUrl != null &&
+                    widget.quest.imageUrl!.isNotEmpty)
                   Container(
                     height: 200,
                     width: double.infinity,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
-                      image: DecorationImage(
-                        image: AssetImage(widget.quest.image!),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.3),
+                          spreadRadius: 2,
+                          blurRadius: 5,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.network(
+                        widget.quest.imageUrl!,
                         fit: BoxFit.cover,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Container(
+                            color: Colors.grey[200],
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                value: loadingProgress.expectedTotalBytes !=
+                                        null
+                                    ? loadingProgress.cumulativeBytesLoaded /
+                                        loadingProgress.expectedTotalBytes!
+                                    : null,
+                              ),
+                            ),
+                          );
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: Colors.grey[200],
+                            child: const Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.image_not_supported,
+                                    size: 50,
+                                    color: Colors.grey,
+                                  ),
+                                  SizedBox(height: 8),
+                                  Text(
+                                    'Image not available',
+                                    style: TextStyle(color: Colors.grey),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  )
+                else
+                  // Fallback placeholder when no image
+                  Container(
+                    height: 200,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          _getCategoryColor(widget.quest.category)
+                              .withOpacity(0.3),
+                          _getCategoryColor(widget.quest.category)
+                              .withOpacity(0.6),
+                        ],
+                      ),
+                    ),
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            _getCategoryIcon(widget.quest.category),
+                            size: 60,
+                            color: Colors.white,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            widget.quest.category.toUpperCase(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -103,8 +205,10 @@ class _QuestDetailPageState extends State<QuestDetailPage> {
                     const SizedBox(width: 8),
                     Chip(
                       label: Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           const Icon(Icons.star, size: 16),
+                          const SizedBox(width: 4),
                           Text('${widget.quest.points}'),
                         ],
                       ),
@@ -132,9 +236,22 @@ class _QuestDetailPageState extends State<QuestDetailPage> {
 
                 const SizedBox(height: 32),
 
-                if (!_isStarted && !_isCompleted) _buildStartQuestSection(),
-                if (_isStarted && !_isCompleted) _buildCompleteQuestSection(),
-                if (_isCompleted) _buildCompletedSection(),
+                // Quest action sections with loading states
+                if (isLoading)
+                  const Center(
+                    child: Column(
+                      children: [
+                        CircularProgressIndicator(),
+                        SizedBox(height: 16),
+                        Text('Processing...'),
+                      ],
+                    ),
+                  )
+                else ...[
+                  if (!_isStarted && !_isCompleted) _buildStartQuestSection(),
+                  if (_isStarted && !_isCompleted) _buildCompleteQuestSection(),
+                  if (_isCompleted) _buildCompletedSection(),
+                ],
 
                 const SizedBox(height: 32),
               ],
@@ -335,10 +452,11 @@ class _QuestDetailPageState extends State<QuestDetailPage> {
   }
 
   Color _getCategoryColor(String category) {
-    switch (category) {
+    switch (category.toLowerCase()) {
       case 'cbt':
         return Colors.purple[100]!;
       case 'mindfulness':
+      case 'mindfulness & meditation':
         return Colors.teal[100]!;
       case 'activity':
         return Colors.orange[100]!;
@@ -348,6 +466,24 @@ class _QuestDetailPageState extends State<QuestDetailPage> {
         return Colors.indigo[100]!;
       default:
         return Colors.grey[100]!;
+    }
+  }
+
+  IconData _getCategoryIcon(String category) {
+    switch (category.toLowerCase()) {
+      case 'cbt':
+        return Icons.psychology;
+      case 'mindfulness':
+      case 'mindfulness & meditation':
+        return Icons.self_improvement;
+      case 'activity':
+        return Icons.directions_run;
+      case 'social':
+        return Icons.people;
+      case 'gratitude':
+        return Icons.favorite;
+      default:
+        return Icons.star;
     }
   }
 

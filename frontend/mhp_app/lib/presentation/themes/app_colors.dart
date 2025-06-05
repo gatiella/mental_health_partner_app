@@ -1,48 +1,47 @@
-// lib/presentation/themes/app_colors.dart
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // Primary Colors (Soft Teal)
-  static const Color primaryColor = Color(0xFF4DB6AC);
-  static const Color primaryLightColor = Color(0xFF82E9DE);
-  static const Color primaryDarkColor = Color(0xFF00867D);
+  // Primary Colors (Warm Rose)
+  static const Color primaryColor = Color(0xFFE91E63);
+  static const Color primaryLightColor = Color(0xFFF8BBD9);
+  static const Color primaryDarkColor = Color(0xFFAD1457);
 
-  // Secondary Colors (Gentle Lavender)
-  static const Color secondaryColor = Color(0xFF9575CD);
-  static const Color secondaryLightColor = Color(0xFFC7A4FF);
-  static const Color secondaryDarkColor = Color(0xFF65499C);
+  // Secondary Colors (Ocean Blue)
+  static const Color secondaryColor = Color(0xFF2196F3);
+  static const Color secondaryLightColor = Color(0xFFBBDEFB);
+  static const Color secondaryDarkColor = Color(0xFF1565C0);
 
-  // Background Colors (Soft Neutrals)
-  static const Color backgroundLight = Color(0xFFF5F7FA);
-  static const Color backgroundDark = Color(0xFF263238);
+  // Background Colors (Warm Cream)
+  static const Color backgroundLight = Color(0xFFFFF8E1);
+  static const Color backgroundDark = Color(0xFF3E2723);
 
   // Surface Colors
-  static const Color surfaceLight = Color(0xFFFFFFFF);
-  static const Color surfaceDark = Color(0xFF37474F);
+  static const Color surfaceLight = Color(0xFFFFFDE7);
+  static const Color surfaceDark = Color(0xFF5D4037);
 
   // Text Colors
-  static const Color textPrimaryLight = Color(0xFF2E3A40);
-  static const Color textSecondaryLight = Color(0xFF607079);
-  static const Color textPrimaryDark = Color(0xFFECEFF1);
-  static const Color textSecondaryDark = Color(0xFFB0BEC5);
+  static const Color textPrimaryLight = Color(0xFF3E2723);
+  static const Color textSecondaryLight = Color(0xFF8D6E63);
+  static const Color textPrimaryDark = Color(0xFFFFF8E1);
+  static const Color textSecondaryDark = Color(0xFFD7CCC8);
 
-  // Error Colors (Soft Reds)
-  static const Color errorColor = Color(0xFFEF5350);
-  static const Color errorLightColor = Color(0xFFFF867C);
+  // Error Colors (Coral Red)
+  static const Color errorColor = Color(0xFFFF5722);
+  static const Color errorLightColor = Color(0xFFFFAB91);
 
-  // Success Colors (Nature Greens)
-  static const Color successColor = Color(0xFF66BB6A);
-  static const Color successLightColor = Color(0xFF98EE99);
+  // Success Colors (Forest Green)
+  static const Color successColor = Color(0xFF4CAF50);
+  static const Color successLightColor = Color(0xFFC8E6C9);
 
   // Mood Colors (Harmonized Palette)
-  static const Color moodHappy = Color(0xFFFFD54F); // Warm Yellow
-  static const Color moodSad = Color(0xFF64B5F6); // Soft Blue
-  static const Color moodAngry = Color(0xFFE57373); // Muted Red
-  static const Color moodNeutral = Color(0xFFA5A5A5); // Medium Gray
-  static const Color moodCalm = Color(0xFF81C784); // Pastel Green
-  static const Color moodAnxious = Color(0xFFBA68C8); // Soft Purple
+  static const Color moodHappy = Color(0xFFFFC107); // Golden Yellow
+  static const Color moodSad = Color(0xFF03A9F4); // Sky Blue
+  static const Color moodAngry = Color(0xFFFF5722); // Vibrant Orange
+  static const Color moodNeutral = Color(0xFF9E9E9E); // Neutral Gray
+  static const Color moodCalm = Color(0xFF8BC34A); // Fresh Green
+  static const Color moodAnxious = Color(0xFF9C27B0); // Deep Purple
 
   // Additional Wellness Colors
-  static const Color breathworkHighlight = Color(0xFF80DEEA); // Light Cyan
-  static const Color meditationAccent = Color(0xFFCE93D8); // Soft Purple
+  static const Color breathworkHighlight = Color(0xFF00BCD4); // Turquoise
+  static const Color meditationAccent = Color(0xFF673AB7); // Deep Purple
 }

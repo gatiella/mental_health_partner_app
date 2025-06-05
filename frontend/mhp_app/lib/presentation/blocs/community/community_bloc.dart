@@ -4,8 +4,10 @@ import 'dart:ui';
 import 'package:dartz/dartz.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mental_health_partner/core/errors/failure.dart';
+import 'package:mental_health_partner/domain/entities/success_story.dart';
 import 'package:mental_health_partner/domain/usecases/community/complete_challenge_usecase.dart';
 import 'package:mental_health_partner/domain/usecases/community/create_forum_post_usecase.dart';
+import 'package:mental_health_partner/domain/usecases/community/create_success_story_usecase.dart';
 import 'package:mental_health_partner/domain/usecases/community/get_challenges_usecase.dart';
 import 'package:mental_health_partner/domain/usecases/community/get_discussion_groups_usecase.dart';
 import 'package:mental_health_partner/domain/usecases/community/get_forum_threads_usecase.dart';
@@ -25,6 +27,7 @@ class CommunityBloc extends Bloc<CommunityEvent, CommunityState> {
   final GetChallengesUseCase getChallenges;
   final JoinChallengeUseCase joinChallenge;
   final GetSuccessStoriesUseCase getSuccessStories;
+  final CreateSuccessStoryUseCase createSuccessStory;
   final SendEncouragementUseCase sendEncouragement;
   final GetThreadDetailsUseCase getThreadDetails;
   final CompleteChallengeUseCase completeChallenge;
@@ -37,6 +40,7 @@ class CommunityBloc extends Bloc<CommunityEvent, CommunityState> {
     required this.getChallenges,
     required this.joinChallenge,
     required this.getSuccessStories,
+    required this.createSuccessStory,
     required this.sendEncouragement,
     required this.getThreadDetails,
     required this.completeChallenge,
@@ -49,11 +53,65 @@ class CommunityBloc extends Bloc<CommunityEvent, CommunityState> {
     on<LoadChallenges>(_onLoadChallenges);
     on<JoinChallenge>(_onJoinChallenge);
     on<LoadSuccessStories>(_onLoadSuccessStories);
+    on<CreateSuccessStory>(_onCreateSuccessStory);
     on<ToggleEncouragement>(_onToggleEncouragement);
+    on<ToggleStoryEncouragement>(_onToggleStoryEncouragement);
     on<GetThreadDetails>(_onGetThreadDetails);
     on<CompleteChallenge>(_onCompleteChallenge);
     on<LoadForumPosts>(_onLoadForumPosts);
   }
+
+  Future<void> _onCreateSuccessStory(
+    CreateSuccessStory event,
+    Emitter<CommunityState> emit,
+  ) async {
+    emit(CommunityLoading());
+
+    final result = await createSuccessStory(
+      event.title,
+      event.content,
+      event.category,
+      isAnonymous: event.isAnonymous,
+    );
+
+    result.fold(
+      (failure) => emit(CommunityError(failure.message)),
+      (story) => add(LoadSuccessStories()),
+    );
+  }
+
+  Future<void> _onToggleStoryEncouragement(
+    ToggleStoryEncouragement event,
+    Emitter<CommunityState> emit,
+  ) async {
+    final currentState = state;
+    if (currentState is! SuccessStoriesLoaded) return;
+
+    final stories = List<SuccessStory>.from(currentState.stories);
+    final index = stories.indexWhere((s) => s.id == event.storyId);
+    if (index == -1) return;
+
+    final oldStory = stories[index];
+
+    final result = await sendEncouragement(event.storyId, type: 'story');
+
+    result.fold(
+      (failure) => emit(CommunityError(failure.message)),
+      (_) {
+        final updatedStory = oldStory.copyWith(
+          hasEncouraged: !oldStory.hasEncouraged,
+          encouragementCount: oldStory.hasEncouraged
+              ? oldStory.encouragementCount - 1
+              : oldStory.encouragementCount + 1,
+        );
+
+        stories[index] = updatedStory;
+
+        emit(SuccessStoriesLoaded(stories));
+      },
+    );
+  }
+
   Future<void> _onLoadForumPosts(
     LoadForumPosts event,
     Emitter<CommunityState> emit,
@@ -66,7 +124,7 @@ class CommunityBloc extends Bloc<CommunityEvent, CommunityState> {
       (failure) => emit(CommunityError(failure.message)),
       (thread) => emit(ForumPostsLoaded(
         thread.posts,
-        isThreadLocked: thread.isLocked, // ✅ Add the missing parameter
+        isThreadLocked: thread.isLocked,
       )),
     );
   }
