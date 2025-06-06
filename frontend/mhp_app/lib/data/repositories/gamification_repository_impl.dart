@@ -153,12 +153,7 @@ class GamificationRepositoryImpl implements GamificationRepository {
       try {
         final points = await remoteDataSource.getUserPoints();
         await localDataSource.cacheUserPoints(points);
-        // Convert the model to entity directly
-        return Right(UserPoints(
-          totalPoints: points.totalPoints,
-          currentPoints: points.currentPoints,
-          lastUpdated: points.lastUpdated,
-        ));
+        return Right(points.toEntity());
       } on AuthException {
         return const Left(AuthFailure(
             message: "Authentication failed. Please log in again."));
@@ -168,12 +163,7 @@ class GamificationRepositoryImpl implements GamificationRepository {
     } else {
       try {
         final localPoints = await localDataSource.getLastUserPoints();
-        // Convert the model to entity directly
-        return Right(UserPoints(
-          totalPoints: localPoints.totalPoints,
-          currentPoints: localPoints.currentPoints,
-          lastUpdated: localPoints.lastUpdated,
-        ));
+        return Right(localPoints.toEntity());
       } on CacheException {
         return const Left(CacheFailure(message: "No cached data available"));
       }

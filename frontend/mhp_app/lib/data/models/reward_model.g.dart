@@ -44,17 +44,3 @@ Map<String, dynamic> _$UserRewardModelToJson(UserRewardModel instance) =>
       'redeemedAt': instance.redeemedAt.toIso8601String(),
       'redemptionCode': instance.redemptionCode,
     };
-
-UserPointsModel _$UserPointsModelFromJson(Map<String, dynamic> json) =>
-    UserPointsModel(
-      totalPoints: (json['totalPoints'] as num).toInt(),
-      currentPoints: (json['currentPoints'] as num).toInt(),
-      lastUpdated: DateTime.parse(json['lastUpdated'] as String),
-    );
-
-Map<String, dynamic> _$UserPointsModelToJson(UserPointsModel instance) =>
-    <String, dynamic>{
-      'totalPoints': instance.totalPoints,
-      'currentPoints': instance.currentPoints,
-      'lastUpdated': instance.lastUpdated.toIso8601String(),
-    };

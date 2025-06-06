@@ -15,13 +15,12 @@ class UserPointsModel extends Equatable {
   // Manual fromJson implementation
   factory UserPointsModel.fromJson(Map<String, dynamic> json) {
     return UserPointsModel(
-      totalPoints: json['total_points'] ?? 0,
-      currentPoints: json['current_points'] ?? 0,
-      lastUpdated: _fromJsonTimestamp(
+      totalPoints: int.parse(json['total_points'].toString()),
+      currentPoints: int.parse(json['current_points'].toString()),
+      lastUpdated: DateTime.parse(
           json['last_updated'] ?? DateTime.now().toIso8601String()),
     );
   }
-
   // Manual conversion to entity
   UserPoints toEntity() {
     return UserPoints(
@@ -31,18 +30,14 @@ class UserPointsModel extends Equatable {
     );
   }
 
+  Map<String, dynamic> toJson() {
+    return {
+      'total_points': totalPoints,
+      'current_points': currentPoints,
+      'last_updated': lastUpdated.toIso8601String(),
+    };
+  }
+
   @override
   List<Object> get props => [totalPoints, currentPoints, lastUpdated];
-
-  static DateTime _fromJsonTimestamp(dynamic timestamp) {
-    if (timestamp == null) return DateTime.now();
-    if (timestamp is int) {
-      return DateTime.fromMillisecondsSinceEpoch(timestamp);
-    }
-    try {
-      return DateTime.parse(timestamp.toString());
-    } catch (_) {
-      return DateTime.now();
-    }
-  }
 }

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:mental_health_partner/core/errors/exceptions.dart';
+import 'package:mental_health_partner/data/models/%20user_points_model.dart';
 import 'package:mental_health_partner/data/models/achievement_model.dart';
 import 'package:mental_health_partner/data/models/quest_model.dart';
 import 'package:mental_health_partner/data/models/reward_model.dart';
@@ -258,7 +259,7 @@ class GamificationRemoteDataSourceImpl implements GamificationRemoteDataSource {
   @override
   Future<List<UserAchievementModel>> getEarnedAchievements() async {
     final response = await client.get(
-      _buildUrl('api/gamification/achievements/earned/'),
+      _buildUrl('api/gamification/achievements/user_achievements/'),
       headers: await _buildHeaders(),
     );
 
@@ -386,11 +387,20 @@ class GamificationRemoteDataSourceImpl implements GamificationRemoteDataSource {
     );
 
     if (response.statusCode == 200) {
-      // Safely parse the response and handle null values
+      // ADD THIS DEBUG LINE
+      print('Points API Response: ${response.body}');
+
       try {
-        return UserPointsModel.fromJson(json.decode(response.body));
+        final responseData = json.decode(response.body);
+        // ADD THIS DEBUG LINE TOO
+        print('Parsed response data: $responseData');
+
+        final pointsData =
+            responseData is List ? responseData.first : responseData;
+        return UserPointsModel.fromJson(pointsData);
       } catch (e) {
-        // If parsing fails, return a default UserPointsModel with zeros
+        // ADD THIS DEBUG LINE
+        print('Points parsing error: $e');
         return UserPointsModel(
           totalPoints: 0,
           currentPoints: 0,

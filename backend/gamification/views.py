@@ -135,10 +135,11 @@ class UserQuestViewSet(viewsets.ModelViewSet):
             result = UserQuestSerializer(user_quest, context={'request': request}).data
             result['points_earned'] = points_earned
             result['total_points'] = user_points.total_points
+            result['current_points'] = user_points.current_points  # ADD THIS LINE
             return Response(result)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+    
     @action(detail=False, methods=['get'])
     def active(self, request):
         """Get active (started but not completed) quests"""
@@ -163,7 +164,55 @@ class UserQuestViewSet(viewsets.ModelViewSet):
         )
         serializer = self.get_serializer(quests, many=True)
         return Response(serializer.data)
-
+    def create(self, request, *args, **kwargs):
+        """Create a new user quest (start a quest)"""
+        try:
+            quest_id = request.data.get('quest_id')
+            mood_before = request.data.get('mood_before')
+            
+            if not quest_id:
+                return Response(
+                    {"detail": "quest_id is required."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            quest = Quest.objects.get(id=quest_id, is_active=True)
+            
+            # Check if user already has this quest in progress
+            existing = UserQuest.objects.filter(
+                user=request.user,
+                quest=quest,
+                is_completed=False
+            ).first()
+            
+            if existing:
+                serializer = UserQuestSerializer(existing, context={'request': request})
+                return Response(serializer.data)
+            
+            # Create new user quest
+            user_quest = UserQuest.objects.create(
+                user=request.user,
+                quest=quest,
+                mood_before=mood_before
+            )
+            
+            serializer = UserQuestSerializer(user_quest, context={'request': request})
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            
+        except Quest.DoesNotExist:
+            return Response(
+                {"detail": "Quest not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            # Log the actual error
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error creating user quest: {str(e)}")
+            return Response(
+                {"detail": f"Server error: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 class AchievementViewSet(viewsets.ReadOnlyModelViewSet):
     """
     API endpoint for viewing achievements
@@ -288,8 +337,8 @@ class UserPointsViewSet(viewsets.ReadOnlyModelViewSet):
 
     def list(self, request, *args, **kwargs):
         """Override list to return single object"""
-        instance = self.get_object()
-        serializer = self.get_serializer(instance)
+        user_points, created = UserPoints.objects.get_or_create(user=request.user)
+        serializer = self.get_serializer(user_points)
         return Response(serializer.data)
     
 @api_view(['GET'])

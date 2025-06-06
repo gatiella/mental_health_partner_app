@@ -48,20 +48,20 @@ class UserRewardModel {
   Map<String, dynamic> toJson() => _$UserRewardModelToJson(this);
 }
 
-@JsonSerializable()
-class UserPointsModel {
-  final int totalPoints;
-  final int currentPoints;
-  final DateTime lastUpdated;
+// @JsonSerializable()
+// class UserPointsModel {
+//   final int totalPoints;
+//   final int currentPoints;
+//   final DateTime lastUpdated;
 
-  UserPointsModel({
-    required this.totalPoints,
-    required this.currentPoints,
-    required this.lastUpdated,
-  });
+//   UserPointsModel({
+//     required this.totalPoints,
+//     required this.currentPoints,
+//     required this.lastUpdated,
+//   });
 
-  factory UserPointsModel.fromJson(Map<String, dynamic> json) =>
-      _$UserPointsModelFromJson(json);
+//   factory UserPointsModel.fromJson(Map<String, dynamic> json) =>
+//       _$UserPointsModelFromJson(json);
 
-  Map<String, dynamic> toJson() => _$UserPointsModelToJson(this);
-}
+//   Map<String, dynamic> toJson() => _$UserPointsModelToJson(this);
+// }

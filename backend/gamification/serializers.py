@@ -40,7 +40,7 @@ class QuestSerializer(serializers.ModelSerializer):
                 user=request.user,
                 quest=obj
             ).first()
-            return quest.progress if quest else 0.0
+            return  0.0
         return 0.0
 
 # Rest of your serializers remain the same
@@ -111,4 +111,4 @@ class UserPointsSerializer(serializers.ModelSerializer):
         fields = ['total_points', 'current_points', 'last_updated']
 
 class RedeemRewardSerializer(serializers.Serializer):
-    reward_id = serializers.IntegerField()
+    reward_id = serializers.IntegerField()#hello test 
