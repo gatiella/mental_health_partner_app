@@ -1,67 +1,56 @@
 import 'package:json_annotation/json_annotation.dart';
+import '../../domain/entities/reward.dart';
 
 part 'reward_model.g.dart';
 
 @JsonSerializable()
-class RewardModel {
-  final int id;
-  final String title;
-  final String description;
-  final int pointsRequired;
-  final String? partnerName;
-  final String? image;
-  final DateTime? expiryDate;
-
+class RewardModel extends Reward {
   RewardModel({
-    required this.id,
-    required this.title,
-    required this.description,
-    required this.pointsRequired,
-    this.partnerName,
-    this.image,
-    this.expiryDate,
+    required super.id,
+    required super.title,
+    required super.description,
+    required super.pointsRequired,
+    super.partnerName,
+    super.image,
+    super.expiryDate,
   });
 
-  factory RewardModel.fromJson(Map<String, dynamic> json) =>
-      _$RewardModelFromJson(json);
+  factory RewardModel.fromJson(Map<String, dynamic> json) {
+    return RewardModel(
+      id: json['id'] as int? ?? 0,
+      title: json['title'] as String? ?? '',
+      description: json['description'] as String? ?? '',
+      pointsRequired: json['pointsRequired'] as int? ?? 0,
+      partnerName: json['partnerName'] as String?,
+      image: json['image'] as String?,
+      expiryDate: json['expiryDate'] != null
+          ? DateTime.tryParse(json['expiryDate'].toString())
+          : null,
+    );
+  }
 
   Map<String, dynamic> toJson() => _$RewardModelToJson(this);
 }
 
 @JsonSerializable()
-class UserRewardModel {
-  final int id;
-  final RewardModel reward;
-  final DateTime redeemedAt;
-  final String? redemptionCode;
-
+class UserRewardModel extends UserReward {
   UserRewardModel({
-    required this.id,
-    required this.reward,
-    required this.redeemedAt,
-    this.redemptionCode,
-  });
+    required super.id,
+    required RewardModel reward,
+    required super.redeemedAt,
+    super.redemptionCode,
+  }) : super(reward: reward);
 
-  factory UserRewardModel.fromJson(Map<String, dynamic> json) =>
-      _$UserRewardModelFromJson(json);
+  factory UserRewardModel.fromJson(Map<String, dynamic> json) {
+    return UserRewardModel(
+      id: json['id'] as int? ?? 0,
+      reward:
+          RewardModel.fromJson(json['reward'] as Map<String, dynamic>? ?? {}),
+      redeemedAt: DateTime.tryParse(json['redeemedAt']?.toString() ?? '') ??
+          DateTime.now(),
+      redemptionCode: json['redemptionCode'] as String?,
+    );
+  }
 
   Map<String, dynamic> toJson() => _$UserRewardModelToJson(this);
 }
-
-// @JsonSerializable()
-// class UserPointsModel {
-//   final int totalPoints;
-//   final int currentPoints;
-//   final DateTime lastUpdated;
-
-//   UserPointsModel({
-//     required this.totalPoints,
-//     required this.currentPoints,
-//     required this.lastUpdated,
-//   });
-
-//   factory UserPointsModel.fromJson(Map<String, dynamic> json) =>
-//       _$UserPointsModelFromJson(json);
-
-//   Map<String, dynamic> toJson() => _$UserPointsModelToJson(this);
-// }

@@ -15,12 +15,45 @@ class AchievementsPage extends StatelessWidget {
       body: BlocBuilder<GamificationBloc, GamificationState>(
         buildWhen: (prev, curr) =>
             curr is EarnedAchievementsLoaded ||
-            curr is EarnedAchievementsLoading,
+            curr is EarnedAchievementsLoading ||
+            curr is EarnedAchievementsError,
         builder: (context, state) {
+          // Trigger loading earned achievements when page loads
+          if (state is! EarnedAchievementsLoaded &&
+              state is! EarnedAchievementsLoading &&
+              state is! EarnedAchievementsError) {
+            context.read<GamificationBloc>().add(LoadEarnedAchievements());
+            return const Center(child: CircularProgressIndicator());
+          }
+
           if (state is EarnedAchievementsLoading) {
             return const Center(child: CircularProgressIndicator());
           }
+
+          if (state is EarnedAchievementsError) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('Error: ${state.message}'),
+                  ElevatedButton(
+                    onPressed: () {
+                      context
+                          .read<GamificationBloc>()
+                          .add(LoadEarnedAchievements());
+                    },
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            );
+          }
+
           if (state is EarnedAchievementsLoaded) {
+            if (state.achievements.isEmpty) {
+              return const Center(child: Text('No achievements earned yet'));
+            }
+
             return GridView.builder(
               padding: const EdgeInsets.all(16),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -40,6 +73,7 @@ class AchievementsPage extends StatelessWidget {
               },
             );
           }
+
           return const Center(child: Text('No achievements earned yet'));
         },
       ),
@@ -55,14 +89,42 @@ class AchievementsPage extends StatelessWidget {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Image.asset(achievement.achievement.badgeImage, height: 100),
+            _buildDialogImage(achievement.achievement.badgeImage),
             const SizedBox(height: 16),
             Text(achievement.achievement.description),
             const SizedBox(height: 16),
             Text('Earned: ${achievement.earnedAt.toString().split(' ')[0]}'),
+            const SizedBox(height: 8),
+            Text('Points: ${achievement.achievement.points}'),
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildDialogImage(String imageUrl) {
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      return Image.network(
+        imageUrl,
+        height: 100,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            height: 100,
+            width: 100,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade300,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(
+              Icons.emoji_events,
+              color: Colors.grey,
+              size: 50,
+            ),
+          );
+        },
+      );
+    } else {
+      return Image.asset(imageUrl, height: 100);
+    }
   }
 }

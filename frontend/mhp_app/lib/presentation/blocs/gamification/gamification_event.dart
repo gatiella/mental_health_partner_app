@@ -80,3 +80,20 @@ class UpdateStreakAfterQuestCompletion extends GamificationEvent {
 }
 
 class LoadUserPoints extends GamificationEvent {}
+
+class CheckLevelUpEvent extends GamificationEvent {
+  final int oldPoints;
+  final int newPoints;
+
+  const CheckLevelUpEvent({
+    required this.oldPoints,
+    required this.newPoints,
+  });
+
+  @override
+  List<Object> get props => [oldPoints, newPoints];
+}
+
+class LoadUserLevelEvent extends GamificationEvent {}
+
+class AcknowledgeLevelUpEvent extends GamificationEvent {}

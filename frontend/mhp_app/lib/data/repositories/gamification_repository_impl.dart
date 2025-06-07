@@ -38,7 +38,7 @@ class GamificationRepositoryImpl implements GamificationRepository {
     } else {
       try {
         final localQuests = await localDataSource.getLastQuests();
-        return Right(localQuests.cast<Quest>());
+        return Right(localQuests.map((model) => model.toEntity()).toList());
       } on CacheException {
         return const Left(CacheFailure(message: "No cached data available"));
       }
@@ -130,7 +130,10 @@ class GamificationRepositoryImpl implements GamificationRepository {
         final earnedAchievements =
             await remoteDataSource.getEarnedAchievements();
         await localDataSource.cacheEarnedAchievements(earnedAchievements);
-        return Right(earnedAchievements.cast<UserAchievement>());
+        // Convert models to entities
+        final entities =
+            earnedAchievements.map((model) => model.toEntity()).toList();
+        return Right(entities);
       } on AuthException {
         return const Left(AuthFailure(
             message: "Authentication failed. Please log in again."));
@@ -140,7 +143,9 @@ class GamificationRepositoryImpl implements GamificationRepository {
     } else {
       try {
         final localEarned = await localDataSource.getLastEarnedAchievements();
-        return Right(localEarned.cast<UserAchievement>());
+        // Convert models to entities
+        final entities = localEarned.map((model) => model.toEntity()).toList();
+        return Right(entities);
       } on CacheException {
         return const Left(CacheFailure(message: "No cached data available"));
       }
@@ -171,35 +176,12 @@ class GamificationRepositoryImpl implements GamificationRepository {
   }
 
   @override
-  Future<Either<Failure, List<UserReward>>> getRedeemedRewards() async {
-    if (await networkInfo.isConnected) {
-      try {
-        final rewards = await remoteDataSource.getRedeemedRewards();
-        await localDataSource.cacheRedeemedRewards(rewards);
-        return Right(rewards.cast<UserReward>());
-      } on AuthException {
-        return const Left(AuthFailure(
-            message: "Authentication failed. Please log in again."));
-      } on ServerException {
-        return const Left(ServerFailure(message: "Server Error Occurred"));
-      }
-    } else {
-      try {
-        final local = await localDataSource.getLastRedeemedRewards();
-        return Right(local.cast<UserReward>());
-      } on CacheException {
-        return const Left(CacheFailure(message: "No cached data available"));
-      }
-    }
-  }
-
-  @override
   Future<Either<Failure, List<Reward>>> getRewards() async {
     if (await networkInfo.isConnected) {
       try {
         final rewards = await remoteDataSource.getRewards();
         await localDataSource.cacheRewards(rewards);
-        return Right(rewards.cast<Reward>());
+        return Right(rewards); // Remove .cast<Reward>()
       } on AuthException {
         return const Left(AuthFailure(
             message: "Authentication failed. Please log in again."));
@@ -209,7 +191,30 @@ class GamificationRepositoryImpl implements GamificationRepository {
     } else {
       try {
         final local = await localDataSource.getLastRewards();
-        return Right(local.cast<Reward>());
+        return Right(local); // Remove .cast<Reward>()
+      } on CacheException {
+        return const Left(CacheFailure(message: "No cached data available"));
+      }
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<UserReward>>> getRedeemedRewards() async {
+    if (await networkInfo.isConnected) {
+      try {
+        final rewards = await remoteDataSource.getRedeemedRewards();
+        await localDataSource.cacheRedeemedRewards(rewards);
+        return Right(rewards); // Remove .cast<UserReward>()
+      } on AuthException {
+        return const Left(AuthFailure(
+            message: "Authentication failed. Please log in again."));
+      } on ServerException {
+        return const Left(ServerFailure(message: "Server Error Occurred"));
+      }
+    } else {
+      try {
+        final local = await localDataSource.getLastRedeemedRewards();
+        return Right(local); // Remove .cast<UserReward>()
       } on CacheException {
         return const Left(CacheFailure(message: "No cached data available"));
       }
@@ -221,7 +226,7 @@ class GamificationRepositoryImpl implements GamificationRepository {
     if (await networkInfo.isConnected) {
       try {
         final reward = await remoteDataSource.redeemReward(rewardId);
-        return Right(reward as UserReward);
+        return Right(reward); // Remove as UserReward cast
       } on AuthException {
         return const Left(AuthFailure(
             message: "Authentication failed. Please log in again."));

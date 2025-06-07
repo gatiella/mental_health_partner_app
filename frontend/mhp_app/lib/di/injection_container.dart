@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:mental_health_partner/config/environment.dart';
 import 'package:mental_health_partner/core/storage/secure_storage.dart';
 import 'package:mental_health_partner/data/datasources/local/analytics_local_data_source.dart';
+import 'package:mental_health_partner/domain/repositories/level_repository.dart';
 import 'package:mental_health_partner/domain/usecases/analytics/get_community_engagement.dart';
 import 'package:mental_health_partner/domain/usecases/auth/forgot_password_use_case.dart';
 import 'package:mental_health_partner/domain/usecases/auth/reset_password_use_case.dart';
@@ -348,6 +349,8 @@ Future<void> init() async {
         authBloc: sl<AuthBloc>(),
         getUserStreak: sl<GetUserStreakUseCase>(), // ✅ Added
         getCompletedQuestDates: sl<GetCompletedQuestDatesUseCase>(), // ✅ Added
+        gamificationRepository: sl<GamificationRepository>(), // ✅ NEW
+        levelRepository: sl<LevelRepository>(),
       ));
 
 // Use Cases
@@ -438,6 +441,7 @@ Future<void> init() async {
       () => CompleteChallengeUseCase(sl<CommunityRepository>()));
   sl.registerLazySingleton<CreateSuccessStoryUseCase>(
       () => CreateSuccessStoryUseCase(sl<CommunityRepository>()));
+  sl.registerLazySingleton<LevelRepository>(() => LevelRepository());
 
 // Repository and Data Sources
   sl.registerLazySingleton<CommunityRepository>(() => CommunityRepositoryImpl(

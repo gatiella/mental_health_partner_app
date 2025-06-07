@@ -245,3 +245,30 @@ class PointsError extends GamificationState {
   @override
   List<Object> get props => [message];
 }
+
+class LevelUpState extends GamificationState {
+  final UserLevel newLevel;
+
+  const LevelUpState({required this.newLevel});
+
+  @override
+  List<Object> get props => [newLevel];
+}
+
+class UserLevelLoaded extends GamificationState {
+  final UserProgress userProgress;
+
+  const UserLevelLoaded({required this.userProgress});
+
+  @override
+  List<Object> get props => [userProgress];
+}
+
+class UserLevelError extends GamificationState {
+  final String message;
+
+  const UserLevelError({required this.message});
+
+  @override
+  List<Object> get props => [message];
+}

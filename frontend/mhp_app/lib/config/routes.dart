@@ -6,6 +6,7 @@ import 'package:mental_health_partner/presentation/blocs/analytics/analytics_blo
 import 'package:mental_health_partner/presentation/blocs/analytics/analytics_event.dart';
 import 'package:mental_health_partner/presentation/blocs/community/community_bloc.dart';
 import 'package:mental_health_partner/presentation/blocs/community/community_event.dart';
+import 'package:mental_health_partner/presentation/blocs/gamification/gamification_bloc.dart';
 import 'package:mental_health_partner/presentation/blocs/journal/journal_bloc.dart';
 import 'package:mental_health_partner/presentation/blocs/journal/journal_event.dart';
 import 'package:mental_health_partner/presentation/pages/analytics/dashboard_page.dart';
@@ -17,6 +18,8 @@ import 'package:mental_health_partner/presentation/pages/community/forum_thread_
 import 'package:mental_health_partner/presentation/pages/community/forums_list_page.dart';
 import 'package:mental_health_partner/presentation/pages/community/success_stories_page.dart';
 import 'package:mental_health_partner/presentation/pages/gamification/achievements_page.dart';
+import 'package:mental_health_partner/presentation/pages/gamification/gamification_dashboard.dart';
+import 'package:mental_health_partner/presentation/pages/gamification/levels_page.dart';
 import 'package:mental_health_partner/presentation/pages/gamification/quests_page.dart';
 import 'package:mental_health_partner/presentation/pages/gamification/rewards_page.dart';
 import '../presentation/pages/splash/splash_screen.dart';
@@ -63,6 +66,7 @@ class AppRouter {
   static const String forumThreadDetailRoute = '/forum-thread';
   static const String forumsRoute = '/forums';
   static const String successStoriesRoute = '/success-stories';
+  static const String gamificationRoute = '/gamification';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -154,6 +158,8 @@ class AppRouter {
         );
       case questsRoute:
         return MaterialPageRoute(builder: (_) => const QuestsPage());
+      case gamificationRoute:
+        return MaterialPageRoute(builder: (_) => const GamificationDashboard());
       case achievementsRoute:
         return MaterialPageRoute(builder: (_) => const AchievementsPage());
       case rewardsRoute:
@@ -196,6 +202,14 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const ProfilePage());
       case settingsRoute:
         return MaterialPageRoute(builder: (_) => const SettingsPage());
+      case '/levels':
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider(
+            create: (_) => sl<GamificationBloc>()..add(LoadUserPoints()),
+            child: const LevelsPage(),
+          ),
+        );
+
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(

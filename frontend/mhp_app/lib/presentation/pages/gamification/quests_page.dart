@@ -47,8 +47,8 @@ class _QuestsPageState extends State<QuestsPage>
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
-            Tab(text: 'Recommended'),
             Tab(text: 'All Quests'),
+            Tab(text: 'Recommended'),
           ],
         ),
         actions: [
@@ -82,12 +82,48 @@ class _QuestsPageState extends State<QuestsPage>
       body: TabBarView(
         controller: _tabController,
         children: [
+          // Tab 2: All Quests
+          BlocBuilder<GamificationBloc, GamificationState>(
+            buildWhen: (previous, current) {
+              return current is QuestsLoading ||
+                  current is QuestsLoaded ||
+                  current is QuestsError;
+            },
+            builder: (context, state) {
+              if (state is QuestsLoading) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (state is QuestsLoaded) {
+                _isRetryingAll = false;
+                return _buildQuestList(state.quests);
+              } else if (state is QuestsError) {
+                return _buildErrorView(
+                  state.message,
+                  isRetrying: _isRetryingAll,
+                  onRetry: () {
+                    setState(() {
+                      _isRetryingAll = true;
+                    });
+                    context.read<GamificationBloc>().add(LoadQuests());
+                    Future.delayed(const Duration(seconds: 3), () {
+                      if (mounted && _isRetryingAll) {
+                        setState(() {
+                          _isRetryingAll = false;
+                        });
+                      }
+                    });
+                  },
+                );
+              }
+              return _buildEmptyView('No quests available');
+            },
+          ),
           // Tab 1: Recommended Quests
           BlocBuilder<GamificationBloc, GamificationState>(
-            buildWhen: (previous, current) =>
-                current is RecommendedQuestsLoading ||
-                current is RecommendedQuestsLoaded ||
-                current is RecommendedQuestsError,
+            buildWhen: (previous, current) {
+              return current is RecommendedQuestsLoading ||
+                  current is RecommendedQuestsLoaded ||
+                  current is RecommendedQuestsError;
+            },
             builder: (context, state) {
               if (state is RecommendedQuestsLoading) {
                 return const Center(child: CircularProgressIndicator());
@@ -116,41 +152,6 @@ class _QuestsPageState extends State<QuestsPage>
                 );
               }
               return _buildEmptyView('No recommended quests available');
-            },
-          ),
-
-          // Tab 2: All Quests
-          BlocBuilder<GamificationBloc, GamificationState>(
-            buildWhen: (previous, current) =>
-                current is QuestsLoading ||
-                current is QuestsLoaded ||
-                current is QuestsError,
-            builder: (context, state) {
-              if (state is QuestsLoading) {
-                return const Center(child: CircularProgressIndicator());
-              } else if (state is QuestsLoaded) {
-                _isRetryingAll = false;
-                return _buildQuestList(state.quests);
-              } else if (state is QuestsError) {
-                return _buildErrorView(
-                  state.message,
-                  isRetrying: _isRetryingAll,
-                  onRetry: () {
-                    setState(() {
-                      _isRetryingAll = true;
-                    });
-                    context.read<GamificationBloc>().add(LoadQuests());
-                    Future.delayed(const Duration(seconds: 3), () {
-                      if (mounted && _isRetryingAll) {
-                        setState(() {
-                          _isRetryingAll = false;
-                        });
-                      }
-                    });
-                  },
-                );
-              }
-              return _buildEmptyView('No quests available');
             },
           ),
         ],

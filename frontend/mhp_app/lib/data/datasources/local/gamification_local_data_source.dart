@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ui';
 
 import 'package:mental_health_partner/core/errors/exceptions.dart';
 import 'package:mental_health_partner/core/storage/local_storage.dart';
@@ -6,6 +7,8 @@ import 'package:mental_health_partner/data/models/%20user_points_model.dart';
 import 'package:mental_health_partner/data/models/achievement_model.dart';
 import 'package:mental_health_partner/data/models/quest_model.dart';
 import 'package:mental_health_partner/data/models/reward_model.dart';
+import 'package:mental_health_partner/data/models/user_level_model.dart';
+import 'package:mental_health_partner/data/models/user_progress_model.dart';
 import 'package:mental_health_partner/data/models/user_streak_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -31,6 +34,12 @@ abstract class GamificationLocalDataSource {
   Future<void> cacheUserStreak(UserStreakModel streak);
   Future<List<DateTime>> getLastCompletedQuestDates();
   Future<void> cacheCompletedQuestDates(List<DateTime> dates);
+
+  Future<List<UserLevelModel>> getLastUserLevels();
+  Future<void> cacheUserLevels(List<UserLevelModel> levels);
+
+  Future<UserProgressModel> getLastUserProgress();
+  Future<void> cacheUserProgress(UserProgressModel progress);
 }
 
 class GamificationLocalDataSourceImpl implements GamificationLocalDataSource {
@@ -43,6 +52,9 @@ class GamificationLocalDataSourceImpl implements GamificationLocalDataSource {
   static const String userPointsKey = 'user_points';
   static const String rewardsKey = 'cached_rewards';
   static const String redeemedRewardsKey = 'redeemed_rewards';
+
+  static const String userLevelsKey = 'cached_user_levels';
+  static const String userProgressKey = 'cached_user_progress';
 
   GamificationLocalDataSourceImpl(this.sharedPreferences,
       {required this.storage});
@@ -172,5 +184,58 @@ class GamificationLocalDataSourceImpl implements GamificationLocalDataSource {
       'CACHED_COMPLETED_DATES',
       json.encode(dateStrings),
     );
+  }
+
+  @override
+  Future<void> cacheUserLevels(List<UserLevelModel> levels) async {
+    await storage.write(
+      userLevelsKey,
+      levels.map((level) => level.toJson()).toList(),
+    );
+  }
+
+  @override
+  Future<List<UserLevelModel>> getLastUserLevels() async {
+    final data = await storage.read<List>(userLevelsKey);
+    return data?.map((json) => UserLevelModel.fromJson(json)).toList() ?? [];
+  }
+
+  @override
+  Future<void> cacheUserProgress(UserProgressModel progress) async {
+    await storage.write(userProgressKey, progress.toJson());
+  }
+
+  @override
+  Future<UserProgressModel> getLastUserProgress() async {
+    final data = await storage.read<Map<String, dynamic>>(userProgressKey);
+    if (data != null) {
+      return UserProgressModel.fromJson(data);
+    } else {
+      // Return default progress if no cached data
+      return const UserProgressModel(
+        currentLevel: 1,
+        currentPoints: 0,
+        pointsToNextLevel: 100,
+        currentLevelData: UserLevelModel(
+          level: 1,
+          title: 'Beginner',
+          description: 'Just starting your journey',
+          pointsRequired: 0,
+          badgeImage: '',
+          perks: ['Basic features'],
+          color: Color(0xFF6366F1),
+        ),
+        nextLevelData: UserLevelModel(
+          level: 2,
+          title: 'Explorer',
+          description: 'Exploring new horizons',
+          pointsRequired: 100,
+          badgeImage: '',
+          perks: ['Advanced features'],
+          color: const Color(0xFF8B5CF6),
+        ),
+        progressPercentage: 0.0,
+      );
+    }
   }
 }

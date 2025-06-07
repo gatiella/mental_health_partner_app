@@ -1,8 +1,12 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:mental_health_partner/core/errors/failure.dart';
+import 'package:mental_health_partner/domain/entities/user_level.dart';
 import 'package:mental_health_partner/domain/entities/user_points.dart';
+import 'package:mental_health_partner/domain/entities/user_progress.dart';
 import 'package:mental_health_partner/domain/entities/user_streak.dart';
+import 'package:mental_health_partner/domain/repositories/gamification_repository.dart';
+import 'package:mental_health_partner/domain/repositories/level_repository.dart';
 import 'package:mental_health_partner/domain/usecases/gamification/get_completed_quest_dates_usecase.dart';
 import 'package:mental_health_partner/domain/usecases/gamification/get_user_streak_usecase.dart';
 import 'package:mental_health_partner/presentation/blocs/auth/auth_bloc.dart';
@@ -41,6 +45,9 @@ class GamificationBloc extends Bloc<GamificationEvent, GamificationState> {
   final GetUserStreakUseCase getUserStreak;
   final GetCompletedQuestDatesUseCase getCompletedQuestDates;
 
+  //final GamificationRepository _gamificationRepository;
+  final LevelRepository _levelRepository;
+
   GamificationBloc({
     required this.getQuests,
     required this.getRecommendedQuests,
@@ -55,7 +62,10 @@ class GamificationBloc extends Bloc<GamificationEvent, GamificationState> {
     required this.authBloc,
     required this.getUserStreak,
     required this.getCompletedQuestDates,
-  }) : super(GamificationInitial()) {
+    required GamificationRepository gamificationRepository,
+    required LevelRepository levelRepository,
+  })  : _levelRepository = levelRepository,
+        super(GamificationInitial()) {
     on<LoadQuests>(_onLoadQuests);
     on<LoadRecommendedQuests>(_onLoadRecommendedQuests);
     on<StartQuestEvent>(_onStartQuest);
@@ -70,6 +80,9 @@ class GamificationBloc extends Bloc<GamificationEvent, GamificationState> {
 
     on<LoadUserStreak>(_onLoadUserStreak);
     on<UpdateStreakAfterQuestCompletion>(_onUpdateStreakAfterQuestCompletion);
+    on<CheckLevelUpEvent>(_onCheckLevelUp);
+    // on<LoadUserLevelEvent>(_onLoadUserLevel);
+    // on<AcknowledgeLevelUpEvent>(_onAcknowledgeLevelUp);
   }
 
   void _onAddPoints(AddPoints event, Emitter<GamificationState> emit) {
@@ -285,4 +298,72 @@ class GamificationBloc extends Bloc<GamificationEvent, GamificationState> {
         return 'Unexpected error. Please try again later.';
     }
   }
+
+  Future<void> _onCheckLevelUp(
+    CheckLevelUpEvent event,
+    Emitter<GamificationState> emit,
+  ) async {
+    try {
+      final oldLevel = _levelRepository.getLevelByPoints(event.oldPoints);
+      final newLevel = _levelRepository.getLevelByPoints(event.newPoints);
+
+      if (newLevel.level > oldLevel.level) {
+        emit(LevelUpState(newLevel: newLevel));
+      }
+    } catch (e) {
+      // Handle error silently as this is a background check
+    }
+  }
+
+  // Future<void> _onLoadUserLevel(
+  //   LoadUserLevelEvent event,
+  //   Emitter<GamificationState> emit,
+  // ) async {
+  //   try {
+  //     emit(GamificationLoading());
+
+  //     final points = await _gamificationRepository.getUserPoints();
+  //     final userProgress =
+  //         _levelRepository.getUserProgress(points.currentPoints);
+
+  //     emit(UserLevelLoaded(userProgress: userProgress));
+  //   } catch (e) {
+  //     emit(UserLevelError(message: e.toString()));
+  //   }
+  // }
+
+  // Future<void> _onAcknowledgeLevelUp(
+  //   AcknowledgeLevelUpEvent event,
+  //   Emitter<GamificationState> emit,
+  // ) async {
+  //   // Return to previous state or load current data
+  //   add(LoadUserPoints());
+  // }
+
+  // // Override the points loading to check for level ups
+  // Future<void> _onLoadUserPoints(
+  //   LoadUserPoints event,
+  //   Emitter<GamificationState> emit,
+  // ) async {
+  //   try {
+  //     emit(GamificationLoading());
+
+  //     // Get old points if available
+  //     int oldPoints = 0;
+  //     if (state is PointsLoaded) {
+  //       oldPoints = (state as PointsLoaded).points.currentPoints;
+  //     }
+
+  //     final points = await _gamificationRepository.getUserPoints();
+  //     emit(PointsLoaded(points: points));
+
+  //     // Check for level up
+  //     if (oldPoints > 0 && points.currentPoints > oldPoints) {
+  //       add(CheckLevelUpEvent(
+  //           oldPoints: oldPoints, newPoints: points.currentPoints));
+  //     }
+  //   } catch (e) {
+  //     emit(PointsError(message: e.toString()));
+  //   }
+  // }
 }

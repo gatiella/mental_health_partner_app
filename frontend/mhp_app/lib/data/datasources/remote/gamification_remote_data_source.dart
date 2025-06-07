@@ -266,16 +266,69 @@ class GamificationRemoteDataSourceImpl implements GamificationRemoteDataSource {
     if (response.statusCode == 200) {
       final dynamic decodedBody = json.decode(response.body);
 
+      // Debug: Print the actual JSON structure
+      print('Raw JSON response: $decodedBody');
+
       if (decodedBody is List) {
-        return decodedBody
-            .map((json) => UserAchievementModel.fromJson(json))
-            .toList();
+        // Debug: Print first item structure if available
+        if (decodedBody.isNotEmpty) {
+          print('First item structure: ${decodedBody.first}');
+        }
+
+        return decodedBody.map((json) {
+          try {
+            // Ensure all required fields are present and not null
+            final safeJson = Map<String, dynamic>.from(json);
+
+            // Handle achievement nested object
+            if (safeJson['achievement'] != null) {
+              final achievement =
+                  Map<String, dynamic>.from(safeJson['achievement']);
+
+              // Ensure required fields are not null
+              achievement['title'] = achievement['title'] ?? '';
+              achievement['description'] = achievement['description'] ?? '';
+              achievement['badge_image'] =
+                  achievement['badge_image']; // Can be null
+              achievement['points'] = achievement['points'] ?? 0;
+
+              safeJson['achievement'] = achievement;
+            }
+
+            print('Processing JSON: $safeJson');
+            return UserAchievementModel.fromJson(safeJson);
+          } catch (e) {
+            print('Error parsing item: $json');
+            print('Error details: $e');
+            rethrow;
+          }
+        }).toList();
       } else if (decodedBody is Map<String, dynamic>) {
         if (decodedBody.containsKey('data') && decodedBody['data'] is List) {
           final List<dynamic> achievementsJson = decodedBody['data'];
-          return achievementsJson
-              .map((json) => UserAchievementModel.fromJson(json))
-              .toList();
+          print('Data array: $achievementsJson');
+
+          return achievementsJson.map((json) {
+            try {
+              final safeJson = Map<String, dynamic>.from(json);
+
+              if (safeJson['achievement'] != null) {
+                final achievement =
+                    Map<String, dynamic>.from(safeJson['achievement']);
+                achievement['title'] = achievement['title'] ?? '';
+                achievement['description'] = achievement['description'] ?? '';
+                achievement['badge_image'] = achievement['badge_image'];
+                achievement['points'] = achievement['points'] ?? 0;
+                safeJson['achievement'] = achievement;
+              }
+
+              return UserAchievementModel.fromJson(safeJson);
+            } catch (e) {
+              print('Error parsing data item: $json');
+              print('Error details: $e');
+              rethrow;
+            }
+          }).toList();
         } else {
           return [];
         }
@@ -304,12 +357,35 @@ class GamificationRemoteDataSourceImpl implements GamificationRemoteDataSource {
       List<RewardModel> results = [];
 
       if (decodedBody is List) {
-        results =
-            decodedBody.map((json) => RewardModel.fromJson(json)).toList();
+        results = decodedBody
+            .where((json) => json != null)
+            .map((json) {
+              try {
+                return RewardModel.fromJson(json as Map<String, dynamic>);
+              } catch (e) {
+                print('Error parsing reward: $e');
+                return null;
+              }
+            })
+            .where((reward) => reward != null)
+            .cast<RewardModel>()
+            .toList();
       } else if (decodedBody is Map<String, dynamic>) {
         final data = decodedBody['results'] ?? decodedBody['data'];
         if (data is List) {
-          results = data.map((json) => RewardModel.fromJson(json)).toList();
+          results = data
+              .where((json) => json != null)
+              .map((json) {
+                try {
+                  return RewardModel.fromJson(json as Map<String, dynamic>);
+                } catch (e) {
+                  print('Error parsing reward: $e');
+                  return null;
+                }
+              })
+              .where((reward) => reward != null)
+              .cast<RewardModel>()
+              .toList();
         }
       }
       return results;
@@ -318,8 +394,7 @@ class GamificationRemoteDataSourceImpl implements GamificationRemoteDataSource {
           message: 'Authentication failed. Please log in again.');
     } else {
       throw ServerException(
-        message: 'Failed to load rewards: ${response.statusCode}',
-      );
+          message: 'Failed to load rewards: ${response.statusCode}');
     }
   }
 
@@ -335,13 +410,33 @@ class GamificationRemoteDataSourceImpl implements GamificationRemoteDataSource {
 
       if (decodedBody is List) {
         return decodedBody
-            .map((json) => UserRewardModel.fromJson(json))
+            .where((json) => json != null)
+            .map((json) {
+              try {
+                return UserRewardModel.fromJson(json as Map<String, dynamic>);
+              } catch (e) {
+                print('Error parsing user reward: $e');
+                return null;
+              }
+            })
+            .where((reward) => reward != null)
+            .cast<UserRewardModel>()
             .toList();
       } else if (decodedBody is Map<String, dynamic>) {
         if (decodedBody.containsKey('data') && decodedBody['data'] is List) {
           final List<dynamic> rewardsJson = decodedBody['data'];
           return rewardsJson
-              .map((json) => UserRewardModel.fromJson(json))
+              .where((json) => json != null)
+              .map((json) {
+                try {
+                  return UserRewardModel.fromJson(json as Map<String, dynamic>);
+                } catch (e) {
+                  print('Error parsing user reward: $e');
+                  return null;
+                }
+              })
+              .where((reward) => reward != null)
+              .cast<UserRewardModel>()
               .toList();
         } else {
           return [];
@@ -354,8 +449,7 @@ class GamificationRemoteDataSourceImpl implements GamificationRemoteDataSource {
           message: 'Authentication failed. Please log in again.');
     } else {
       throw ServerException(
-        message: 'Failed to load redeemed rewards: ${response.statusCode}',
-      );
+          message: 'Failed to load redeemed rewards: ${response.statusCode}');
     }
   }
 
@@ -368,14 +462,18 @@ class GamificationRemoteDataSourceImpl implements GamificationRemoteDataSource {
     );
 
     if (response.statusCode == 200) {
-      return UserRewardModel.fromJson(json.decode(response.body));
+      try {
+        return UserRewardModel.fromJson(json.decode(response.body));
+      } catch (e) {
+        print('Error parsing redeemed reward: $e');
+        throw ServerException(message: 'Failed to parse reward response');
+      }
     } else if (response.statusCode == 401) {
       throw const AuthException(
           message: 'Authentication failed. Please log in again.');
     } else {
       throw ServerException(
-        message: 'Failed to redeem reward: ${response.statusCode}',
-      );
+          message: 'Failed to redeem reward: ${response.statusCode}');
     }
   }
 
